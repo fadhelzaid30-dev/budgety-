@@ -1,0 +1,9 @@
+Date,Description,Amount,Type
+2026-07-03,Patient payments - cleanings,10800,Revenue
+2026-07-10,Insurance reimbursement,15200,Revenue
+2026-07-01,Clinic rent,6500,Expense
+2026-07-06,Dental supplies,5100,Expense
+2026-07-07,Electricity & water,1020,Expense
+2026-07-15,Staff payroll,19000,Expense
+2026-07-21,Marketing ads,1100,Expense
+2026-07-17,Patient payments - crowns,14500,Revenue

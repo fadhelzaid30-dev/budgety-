@@ -1,0 +1,31 @@
+Date,Description,Amount,Category,Type
+2026-06-01,Clinic rent - office suite,6500,Rent,Expense
+2026-06-02,Dentrix practice-management software,549,Software,Expense
+2026-06-04,Patient copays - cleanings & exams,9200,Revenue,Revenue
+2026-06-05,Dental supplies - Henry Schein,4300,Inventory,Expense
+2026-06-06,Electricity & water,940,Utilities,Expense
+2026-06-07,Internet & phone,310,Utilities,Expense
+2026-06-11,Insurance reimbursement - Delta Dental,13400,Revenue,Revenue
+2026-06-12,Dental lab fees - Glidewell (crowns),3200,Vendor Payments,Expense
+2026-06-15,Payroll - hygienist assistant front desk,19000,Payroll,Expense
+2026-06-18,Patient payments - fillings & crowns,10600,Revenue,Revenue
+2026-06-19,Google Ads & local marketing,900,Marketing,Expense
+2026-06-22,Autoclave repair & maintenance,650,Equipment,Expense
+2026-06-25,Insurance reimbursement - MetLife,12800,Revenue,Revenue
+2026-06-29,Patient payments - whitening & ortho,5400,Revenue,Revenue
+2026-06-30,Payroll - associate dentist,9000,Payroll,Expense
+2026-07-01,Clinic rent - office suite,6500,Rent,Expense
+2026-07-02,Dentrix practice-management software,549,Software,Expense
+2026-07-03,Patient copays - cleanings & exams,10800,Revenue,Revenue
+2026-07-06,Dental supplies - Patterson Dental,5100,Inventory,Expense
+2026-07-07,Electricity & water,1020,Utilities,Expense
+2026-07-08,Internet & phone,310,Utilities,Expense
+2026-07-10,Insurance reimbursement - Delta Dental,15200,Revenue,Revenue
+2026-07-14,Dental lab fees - Glidewell (bridges),3600,Vendor Payments,Expense
+2026-07-15,Payroll - hygienist assistant front desk,19000,Payroll,Expense
+2026-07-17,Patient payments - crowns & implants,14500,Revenue,Revenue
+2026-07-20,New patient chair,4200,Equipment,Expense
+2026-07-21,Social media ads & referral program,1100,Marketing,Expense
+2026-07-24,Insurance reimbursement - Cigna,13600,Revenue,Revenue
+2026-07-29,Patient payments - whitening & ortho,7100,Revenue,Revenue
+2026-07-31,Payroll - associate dentist,9500,Payroll,Expense

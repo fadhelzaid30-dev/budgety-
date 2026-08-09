@@ -4,6 +4,7 @@ import type { PlanTier, RiskLevel } from "@/lib/constants";
 
 export type TransactionType = "revenue" | "expense";
 export type TransactionSource = "manual" | "csv" | "plaid";
+export type RecurrenceFrequency = "biweekly" | "monthly";
 export type CategoryKind = "revenue" | "expense";
 export type RecommendationStatus = "new" | "read" | "dismissed";
 export type ReportEmailStatus = "pending" | "sent" | "failed";
@@ -46,6 +47,8 @@ export interface Transaction {
   source: TransactionSource;
   parent_transaction_id: string | null;
   raw_import: Record<string, unknown> | null;
+  recurrence_frequency: RecurrenceFrequency | null;
+  recurrence_group_id: string | null;
   created_at: string;
   // Optional join
   category?: Pick<Category, "id" | "name" | "kind"> | null;

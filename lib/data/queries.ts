@@ -59,6 +59,8 @@ export interface TransactionQuery {
   search?: string;
   categoryId?: string;
   type?: "revenue" | "expense";
+  /** Filter by recurrence series: "one-time" = not part of any series. */
+  frequency?: "one-time" | "monthly" | "biweekly";
   from?: string;
   to?: string;
   limit?: number;
@@ -79,6 +81,9 @@ export async function getTransactions(
   if (q.search) query = query.ilike("description", `%${q.search}%`);
   if (q.categoryId) query = query.eq("category_id", q.categoryId);
   if (q.type) query = query.eq("type", q.type);
+  if (q.frequency === "one-time") query = query.is("recurrence_frequency", null);
+  else if (q.frequency === "monthly" || q.frequency === "biweekly")
+    query = query.eq("recurrence_frequency", q.frequency);
   if (q.from) query = query.gte("occurred_on", q.from);
   if (q.to) query = query.lte("occurred_on", q.to);
   if (q.limit) query = query.limit(q.limit);

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label, Select } from "@/components/ui/input";
 import {
+  guessColumn,
   normalizeRows,
   type ColumnMapping,
   type RawRow,
@@ -16,15 +17,6 @@ import {
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 type Stage = "upload" | "map" | "done";
-
-function guess(headers: string[], candidates: string[]): string {
-  const lower = headers.map((h) => h.toLowerCase());
-  for (const c of candidates) {
-    const idx = lower.findIndex((h) => h.includes(c));
-    if (idx >= 0) return headers[idx];
-  }
-  return "";
-}
 
 export function CsvImport() {
   const router = useRouter();
@@ -57,11 +49,17 @@ export function CsvImport() {
         }
         setHeaders(hdrs);
         setRows(res.data);
+        // Auto-detect a type/direction column (e.g. "Type", "Debit/Credit").
+        // If present, default to reading direction from it rather than the amount sign,
+        // so CSVs with all-positive amounts + a Type column import correctly.
+        const typeCol = guessColumn(hdrs, ["type", "direction", "dr/cr", "debit/credit", "flow"]);
         setMapping((m) => ({
           ...m,
-          date: guess(hdrs, ["date", "posted", "time"]),
-          amount: guess(hdrs, ["amount", "debit", "value", "total"]),
-          description: guess(hdrs, ["description", "memo", "name", "detail", "payee"]),
+          date: guessColumn(hdrs, ["date", "posted", "time"]),
+          amount: guessColumn(hdrs, ["amount", "debit", "value", "total"]),
+          description: guessColumn(hdrs, ["description", "memo", "name", "detail", "payee"]),
+          typeStrategy: typeCol ? "column" : m.typeStrategy,
+          typeColumn: typeCol,
         }));
         setStage("map");
       },

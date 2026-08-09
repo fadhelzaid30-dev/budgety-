@@ -1,6 +1,16 @@
 // Pure helpers for turning arbitrary bank-CSV rows into normalized transactions.
 // Shared by the client preview and the server import route so both agree exactly.
 
+/** Guess which header matches a field by substring, case-insensitive. */
+export function guessColumn(headers: string[], candidates: string[]): string {
+  const lower = headers.map((h) => h.toLowerCase());
+  for (const c of candidates) {
+    const idx = lower.findIndex((h) => h.includes(c));
+    if (idx >= 0) return headers[idx];
+  }
+  return "";
+}
+
 export type TypeStrategy = "sign" | "column" | "all-expense" | "all-revenue";
 
 export interface ColumnMapping {

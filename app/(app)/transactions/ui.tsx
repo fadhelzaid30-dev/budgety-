@@ -2,139 +2,31 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Plus, Search, Split, Trash2, X } from "lucide-react";
+import { Layers, Plus, Search, Split, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Input, Label, Select } from "@/components/ui/input";
 import { Badge, EmptyState } from "@/components/ui/misc";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
-  createTransaction,
+  deleteRecurrenceGroup,
   deleteTransaction,
   recategorizeTransaction,
   splitTransaction,
 } from "@/lib/actions/transactions";
 import type { Category, Transaction } from "@/types";
 
-const today = () => new Date().toISOString().slice(0, 10);
-
-export function AddTransaction({ categories }: { categories: Category[] }) {
-  const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [pending, start] = useTransition();
-  const [form, setForm] = useState({
-    amount: "",
-    occurred_on: today(),
-    description: "",
-    type: "expense" as "revenue" | "expense",
-    category_id: "",
-  });
-
-  const cats = categories.filter((c) => c.kind === form.type);
-
-  function submit() {
-    setError(null);
-    start(async () => {
-      const res = await createTransaction({
-        amount: form.amount,
-        occurred_on: form.occurred_on,
-        description: form.description,
-        type: form.type,
-        category_id: form.category_id || null,
-      });
-      if (!res.ok) return setError(res.error);
-      setForm({ ...form, amount: "", description: "" });
-      router.refresh();
-    });
-  }
-
-  if (!open) {
-    return (
-      <Button onClick={() => setOpen(true)}>
-        <Plus className="h-4 w-4" /> Add transaction
-      </Button>
-    );
-  }
-
-  return (
-    <Card>
-      <CardContent className="space-y-4 pt-5">
-        <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-foreground">New transaction</h2>
-          <Button variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Close">
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-        {error ? (
-          <div role="alert" className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger">
-            {error}
-          </div>
-        ) : null}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div>
-            <Label htmlFor="a-type">Type</Label>
-            <Select
-              id="a-type"
-              value={form.type}
-              onChange={(e) =>
-                setForm({ ...form, type: e.target.value as "revenue" | "expense", category_id: "" })
-              }
-            >
-              <option value="expense">Expense</option>
-              <option value="revenue">Revenue</option>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="a-amount">Amount (USD)</Label>
-            <Input
-              id="a-amount"
-              type="number"
-              min="0"
-              step="0.01"
-              inputMode="decimal"
-              value={form.amount}
-              onChange={(e) => setForm({ ...form, amount: e.target.value })}
-            />
-          </div>
-          <div>
-            <Label htmlFor="a-date">Date</Label>
-            <Input
-              id="a-date"
-              type="date"
-              value={form.occurred_on}
-              onChange={(e) => setForm({ ...form, occurred_on: e.target.value })}
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <Label htmlFor="a-desc">Description</Label>
-            <Input
-              id="a-desc"
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              placeholder="Google Ads, payroll, client invoice…"
-            />
-          </div>
-          <div>
-            <Label htmlFor="a-cat">Category</Label>
-            <Select
-              id="a-cat"
-              value={form.category_id}
-              onChange={(e) => setForm({ ...form, category_id: e.target.value })}
-            >
-              <option value="">Auto-categorize</option>
-              {cats.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </Select>
-          </div>
-        </div>
-        <Button onClick={submit} disabled={pending || !form.amount}>
-          {pending ? "Saving…" : "Save transaction"}
-        </Button>
-      </CardContent>
-    </Card>
-  );
+export const today = () => new Date().toISOString().slice(0, 10);
+export const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+/** Years offered in the recurrence/filter year selects: a window around today. */
+export function yearOptions() {
+  const y = new Date().getFullYear();
+  const years: number[] = [];
+  for (let i = y - 2; i <= y + 2; i++) years.push(i);
+  return years;
 }
 
 export function TransactionFilters({
@@ -142,7 +34,7 @@ export function TransactionFilters({
   current,
 }: {
   categories: Category[];
-  current: { q?: string; category?: string; type?: string };
+  current: { q?: string; category?: string; type?: string; frequency?: string; year?: string; month?: string };
 }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -197,6 +89,45 @@ export function TransactionFilters({
           ))}
         </Select>
       </div>
+      <div>
+        <Label htmlFor="f-freq">Frequency</Label>
+        <Select
+          id="f-freq"
+          defaultValue={current.frequency ?? ""}
+          onChange={(e) => setParam("frequency", e.target.value)}
+        >
+          <option value="">All</option>
+          <option value="one-time">One-time</option>
+          <option value="monthly">Monthly series</option>
+          <option value="biweekly">Biweekly series</option>
+        </Select>
+      </div>
+      <div>
+        <Label htmlFor="f-year">Year</Label>
+        <Select
+          id="f-year"
+          defaultValue={current.year ?? ""}
+          onChange={(e) => setParam("year", e.target.value)}
+        >
+          <option value="">All years</option>
+          {yearOptions().map((y) => (
+            <option key={y} value={y}>{y}</option>
+          ))}
+        </Select>
+      </div>
+      <div>
+        <Label htmlFor="f-month">Month</Label>
+        <Select
+          id="f-month"
+          defaultValue={current.month ?? ""}
+          onChange={(e) => setParam("month", e.target.value)}
+        >
+          <option value="">All months</option>
+          {MONTH_NAMES.map((name, i) => (
+            <option key={name} value={i + 1}>{name}</option>
+          ))}
+        </Select>
+      </div>
     </div>
   );
 }
@@ -216,6 +147,11 @@ export function TransactionList({
       />
     );
   }
+
+  // Group consecutive rows by month (list is already sorted newest-first) so
+  // businesses can see their transactions organized Jan–Dec at a glance.
+  const monthKeys = transactions.map((t) => t.occurred_on.slice(0, 7));
+
   return (
     <Card>
       <div className="overflow-x-auto">
@@ -233,13 +169,49 @@ export function TransactionList({
             </tr>
           </thead>
           <tbody>
-            {transactions.map((t) => (
-              <TransactionRow key={t.id} tx={t} categories={categories} />
-            ))}
+            {transactions.map((t, i) => {
+              const [y, m] = t.occurred_on.split("-");
+              const showHeader = i === 0 || monthKeys[i] !== monthKeys[i - 1];
+              return (
+                <MonthGroupedRow
+                  key={t.id}
+                  tx={t}
+                  categories={categories}
+                  monthLabel={showHeader ? `${MONTH_NAMES[Number(m) - 1]} ${y}` : null}
+                />
+              );
+            })}
           </tbody>
         </table>
       </div>
     </Card>
+  );
+}
+
+function MonthGroupedRow({
+  tx,
+  categories,
+  monthLabel,
+}: {
+  tx: Transaction;
+  categories: Category[];
+  monthLabel: string | null;
+}) {
+  return (
+    <>
+      {monthLabel ? (
+        <tr>
+          <th
+            scope="colgroup"
+            colSpan={5}
+            className="bg-accent/40 px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted"
+          >
+            {monthLabel}
+          </th>
+        </tr>
+      ) : null}
+      <TransactionRow tx={tx} categories={categories} />
+    </>
   );
 }
 
@@ -249,6 +221,7 @@ function TransactionRow({ tx, categories }: { tx: Transaction; categories: Categ
   const [splitOpen, setSplitOpen] = useState(false);
   const cats = categories.filter((c) => c.kind === tx.type);
   const isChild = Boolean(tx.parent_transaction_id);
+  const isRecurring = Boolean(tx.recurrence_group_id);
 
   function recategorize(categoryId: string) {
     start(async () => {
@@ -263,6 +236,15 @@ function TransactionRow({ tx, categories }: { tx: Transaction; categories: Categ
       router.refresh();
     });
   }
+  function removeSeries() {
+    if (!tx.recurrence_group_id) return;
+    if (!confirm(`Delete this entire ${tx.recurrence_frequency} series? This removes every transaction it generated.`))
+      return;
+    start(async () => {
+      await deleteRecurrenceGroup(tx.recurrence_group_id!);
+      router.refresh();
+    });
+  }
 
   return (
     <>
@@ -271,6 +253,9 @@ function TransactionRow({ tx, categories }: { tx: Transaction; categories: Categ
         <td className="px-4 py-3">
           {tx.description || <span className="text-muted">—</span>}
           {isChild ? <span className="ml-2 text-xs text-muted">(split)</span> : null}
+          {isRecurring ? (
+            <span className="ml-2 text-xs text-muted">({tx.recurrence_frequency})</span>
+          ) : null}
         </td>
         <td className="px-4 py-3">
           <Select
@@ -300,6 +285,18 @@ function TransactionRow({ tx, categories }: { tx: Transaction; categories: Categ
             {!isChild ? (
               <Button variant="ghost" size="icon" onClick={() => setSplitOpen(true)} aria-label="Split transaction">
                 <Split className="h-4 w-4" />
+              </Button>
+            ) : null}
+            {isRecurring ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={removeSeries}
+                disabled={pending}
+                aria-label={`Delete entire ${tx.recurrence_frequency} series`}
+                title={`Delete entire ${tx.recurrence_frequency} series`}
+              >
+                <Layers className="h-4 w-4 text-danger" />
               </Button>
             ) : null}
             <Button variant="ghost" size="icon" onClick={remove} disabled={pending} aria-label="Delete transaction">
