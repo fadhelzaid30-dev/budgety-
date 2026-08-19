@@ -1,6 +1,14 @@
 import { scoreLabel, type HealthScoreResult } from "@/lib/finance/healthScore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/misc";
+import {
+  CHART_SUCCESS,
+  CHART_WARNING,
+  CHART_DANGER,
+  CHART_GRID,
+  CHART_FOREGROUND,
+  CHART_MUTED,
+} from "@/lib/chart-colors";
 
 const FACTOR_LABELS: Record<string, string> = {
   cashFlow: "Cash flow",
@@ -15,7 +23,7 @@ const FACTOR_LABELS: Record<string, string> = {
 export function HealthScoreCard({ health }: { health: HealthScoreResult }) {
   const { score, factors, notes } = health;
   const { label, tone } = scoreLabel(score);
-  const color = tone === "success" ? "#16a34a" : tone === "warning" ? "#d97706" : "#dc2626";
+  const color = tone === "success" ? CHART_SUCCESS : tone === "warning" ? CHART_WARNING : CHART_DANGER;
 
   const radius = 52;
   const circumference = 2 * Math.PI * radius;
@@ -27,7 +35,7 @@ export function HealthScoreCard({ health }: { health: HealthScoreResult }) {
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
           <div className="relative shrink-0" role="img" aria-label={`Business Health Score ${score} out of 100, ${label}`}>
             <svg width="140" height="140" viewBox="0 0 140 140">
-              <circle cx="70" cy="70" r={radius} fill="none" stroke="#e2e8f0" strokeWidth="12" />
+              <circle cx="70" cy="70" r={radius} fill="none" stroke={CHART_GRID} strokeWidth="12" />
               <circle
                 cx="70"
                 cy="70"
@@ -40,10 +48,10 @@ export function HealthScoreCard({ health }: { health: HealthScoreResult }) {
                 strokeDashoffset={offset}
                 transform="rotate(-90 70 70)"
               />
-              <text x="70" y="66" textAnchor="middle" fontSize="30" fontWeight="700" fill="#0f172a">
+              <text x="70" y="66" textAnchor="middle" fontSize="30" fontWeight="700" fill={CHART_FOREGROUND}>
                 {score}
               </text>
-              <text x="70" y="88" textAnchor="middle" fontSize="12" fill="#64748b">
+              <text x="70" y="88" textAnchor="middle" fontSize="12" fill={CHART_MUTED}>
                 / 100
               </text>
             </svg>

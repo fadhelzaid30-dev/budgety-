@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { Sparkles, Check, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { EmptyState, RiskBadge } from "@/components/ui/misc";
+import { Badge, EmptyState, RiskBadge } from "@/components/ui/misc";
 import {
   generateWeeklyRecommendations,
   updateRecommendationStatus,
@@ -90,9 +90,7 @@ function RecommendationCard({
             <div className="mb-1 flex flex-wrap items-center gap-2">
               <h3 className="font-semibold text-foreground">{rec.title}</h3>
               <RiskBadge level={rec.risk_level} />
-              {rec.status === "new" ? (
-                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">New</span>
-              ) : null}
+              {rec.status === "new" ? <Badge tone="primary">New</Badge> : null}
             </div>
             <p className="text-sm text-foreground">{rec.body}</p>
           </div>
