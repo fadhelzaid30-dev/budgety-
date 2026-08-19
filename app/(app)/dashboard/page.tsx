@@ -39,7 +39,7 @@ export default async function DashboardPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-sm text-muted">{business.name} · financial overview</p>
+          <p className="text-sm text-muted">Financial overview</p>
         </div>
         <Link href="/assistant">
           <Button variant="outline">
