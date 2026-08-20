@@ -1,6 +1,6 @@
 import { getCurrentBusiness, getCategories, getTransactions } from "@/lib/data/queries";
 import { AddTransactionPanel } from "./panel";
-import { TransactionFilters, TransactionList } from "./ui";
+import { TransactionFilters, TransactionList, TransactionStats } from "./ui";
 
 export default async function TransactionsPage({
   searchParams,
@@ -50,6 +50,8 @@ export default async function TransactionsPage({
         </div>
         <AddTransactionPanel categories={categories} />
       </div>
+
+      <TransactionStats transactions={transactions} />
 
       <TransactionFilters categories={categories} current={sp} />
       <TransactionList transactions={transactions} categories={categories} />

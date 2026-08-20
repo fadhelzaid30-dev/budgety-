@@ -4,11 +4,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 import Papa from "papaparse";
-import { FileUp, Plus, X } from "lucide-react";
+import { FileUp, Plus, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
+import { Tabs } from "@/components/ui/tabs";
+import { ToggleGroup } from "@/components/ui/toggle-group";
 import { useToast } from "@/components/ui/toast";
-import { cn, formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import {
   createRecurringTransactions,
   createTransaction,
@@ -36,6 +38,11 @@ export function AddTransactionPanel({ categories }: { categories: Category[] }) 
   const [tab, setTab] = useState<Tab>("manual");
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
+  function openTo(t: Tab) {
+    setTab(t);
+    setOpen(true);
+  }
+
   useEffect(() => {
     if (open) closeButtonRef.current?.focus();
   }, [open]);
@@ -56,9 +63,14 @@ export function AddTransactionPanel({ categories }: { categories: Category[] }) 
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>
-        <Plus className="h-4 w-4" /> Add transaction
-      </Button>
+      <div className="flex gap-2">
+        <Button variant="outline" onClick={() => openTo("csv")}>
+          <Upload className="h-4 w-4" /> Import CSV
+        </Button>
+        <Button onClick={() => openTo("manual")}>
+          <Plus className="h-4 w-4" /> Add transaction
+        </Button>
+      </div>
 
       {open ? (
         <div className="fixed inset-0 z-50 flex justify-end">
@@ -83,24 +95,15 @@ export function AddTransactionPanel({ categories }: { categories: Category[] }) 
               </Button>
             </div>
 
-            <div role="tablist" aria-label="Add transaction method" className="flex border-b border-border px-5">
-              {(["manual", "csv"] as const).map((t) => (
-                <button
-                  key={t}
-                  role="tab"
-                  aria-selected={tab === t}
-                  onClick={() => setTab(t)}
-                  className={cn(
-                    "-mb-px border-b-2 px-4 py-3 text-sm font-medium transition-colors",
-                    tab === t
-                      ? "border-primary text-primary"
-                      : "border-transparent text-muted hover:text-foreground",
-                  )}
-                >
-                  {t === "manual" ? "Manual entry" : "Import CSV"}
-                </button>
-              ))}
-            </div>
+            <Tabs
+              value={tab}
+              onValueChange={setTab}
+              label="Add transaction method"
+              items={[
+                { value: "manual", label: "Manual entry" },
+                { value: "csv", label: "Import CSV" },
+              ]}
+            />
 
             <div className="flex-1 overflow-y-auto p-5">
               {tab === "manual" ? (
@@ -189,24 +192,15 @@ function ManualForm({ categories, onDone }: { categories: Category[]; onDone: ()
 
       <div>
         <Label>Type</Label>
-        <div role="group" aria-label="Transaction type" className="flex gap-2">
-          {(["expense", "revenue"] as const).map((t) => (
-            <button
-              key={t}
-              type="button"
-              aria-pressed={form.type === t}
-              onClick={() => setForm({ ...form, type: t, category_id: "" })}
-              className={cn(
-                "flex-1 rounded-lg border px-4 py-2 text-sm font-medium capitalize transition-colors",
-                form.type === t
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border bg-card text-muted hover:text-foreground",
-              )}
-            >
-              {t === "expense" ? "Expense" : "Income"}
-            </button>
-          ))}
-        </div>
+        <ToggleGroup
+          label="Transaction type"
+          value={form.type}
+          onChange={(t) => setForm({ ...form, type: t, category_id: "" })}
+          options={[
+            { value: "expense", label: "Expense" },
+            { value: "revenue", label: "Income" },
+          ]}
+        />
       </div>
 
       <div>
@@ -245,37 +239,15 @@ function ManualForm({ categories, onDone }: { categories: Category[]; onDone: ()
 
       <div>
         <Label>Category</Label>
-        <div role="group" aria-label="Category" className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            aria-pressed={form.category_id === ""}
-            onClick={() => setForm({ ...form, category_id: "" })}
-            className={cn(
-              "rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
-              form.category_id === ""
-                ? "border-primary bg-primary/10 text-primary"
-                : "border-border bg-card text-muted hover:text-foreground",
-            )}
-          >
-            Auto-categorize
-          </button>
-          {cats.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              aria-pressed={form.category_id === c.id}
-              onClick={() => setForm({ ...form, category_id: c.id })}
-              className={cn(
-                "rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
-                form.category_id === c.id
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border bg-card text-muted hover:text-foreground",
-              )}
-            >
-              {c.name}
-            </button>
-          ))}
-        </div>
+        <ToggleGroup
+          label="Category"
+          value={form.category_id}
+          onChange={(id) => setForm({ ...form, category_id: id })}
+          options={[
+            { value: "", label: "Auto-categorize" },
+            ...cats.map((c) => ({ value: c.id, label: c.name })),
+          ]}
+        />
       </div>
 
       <div className="rounded-lg border border-border p-3">

@@ -2,11 +2,22 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Layers, Plus, Search, Split, Trash2 } from "lucide-react";
+import {
+  CircleAlert,
+  Layers,
+  Plus,
+  Scale,
+  Search,
+  Split,
+  Trash2,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label, Select } from "@/components/ui/input";
 import { Badge, EmptyState } from "@/components/ui/misc";
+import { ToggleGroup } from "@/components/ui/toggle-group";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
   deleteRecurrenceGroup,
@@ -27,6 +38,97 @@ export function yearOptions() {
   const years: number[] = [];
   for (let i = y - 2; i <= y + 2; i++) years.push(i);
   return years;
+}
+
+export function TransactionStats({ transactions }: { transactions: Transaction[] }) {
+  const moneyIn = transactions.filter((t) => t.type === "revenue");
+  const moneyOut = transactions.filter((t) => t.type === "expense");
+  const inTotal = moneyIn.reduce((sum, t) => sum + Number(t.amount), 0);
+  const outTotal = moneyOut.reduce((sum, t) => sum + Number(t.amount), 0);
+  const net = inTotal - outTotal;
+  const uncategorized = transactions.filter((t) => !t.category_id).length;
+
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <StatCard
+        icon={TrendingUp}
+        tone="primary"
+        label="Money in"
+        value={formatCurrency(inTotal)}
+        sub={`${moneyIn.length} transaction${moneyIn.length === 1 ? "" : "s"}`}
+      />
+      <StatCard
+        icon={TrendingDown}
+        tone="warning"
+        label="Money out"
+        value={formatCurrency(outTotal)}
+        sub={`${moneyOut.length} transaction${moneyOut.length === 1 ? "" : "s"}`}
+      />
+      <StatCard
+        icon={Scale}
+        tone={net >= 0 ? "success" : "danger"}
+        label="Net"
+        value={`${net >= 0 ? "+" : "−"}${formatCurrency(Math.abs(net))}`}
+        valueTone={net >= 0 ? "success" : "danger"}
+      />
+      <StatCard
+        icon={CircleAlert}
+        tone="warning"
+        label="Uncategorized"
+        value={String(uncategorized)}
+        sub={uncategorized > 0 ? "Categorize now" : "All caught up"}
+        subTone="primary"
+      />
+    </div>
+  );
+}
+
+function StatCard({
+  icon: Icon,
+  tone,
+  label,
+  value,
+  sub,
+  valueTone,
+  subTone,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  tone: "primary" | "warning" | "success" | "danger";
+  label: string;
+  value: string;
+  sub?: string;
+  valueTone?: "success" | "danger";
+  subTone?: "primary";
+}) {
+  const toneClasses: Record<string, string> = {
+    primary: "bg-primary-soft text-primary",
+    warning: "bg-warning/10 text-warning",
+    success: "bg-success/10 text-success",
+    danger: "bg-danger/10 text-danger",
+  };
+  return (
+    <Card className="flex gap-4 p-6">
+      <span className={`w-1 shrink-0 self-stretch rounded-full ${toneClasses[tone].split(" ")[0]}`} />
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <div className="flex items-start justify-between gap-3">
+          <span className="text-sm text-muted">{label}</span>
+          <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${toneClasses[tone]}`}>
+            <Icon className="h-4 w-4" aria-hidden="true" />
+          </span>
+        </div>
+        <span
+          className={`text-2xl font-bold ${valueTone === "success" ? "text-success" : valueTone === "danger" ? "text-danger" : "text-foreground"}`}
+        >
+          {value}
+        </span>
+        {sub ? (
+          <span className={`text-xs ${subTone === "primary" ? "font-medium text-primary" : "text-muted-soft"}`}>
+            {sub}
+          </span>
+        ) : null}
+      </div>
+    </Card>
+  );
 }
 
 export function TransactionFilters({
@@ -65,16 +167,18 @@ export function TransactionFilters({
         </div>
       </div>
       <div>
-        <Label htmlFor="f-type">Type</Label>
-        <Select
-          id="f-type"
-          defaultValue={current.type ?? ""}
-          onChange={(e) => setParam("type", e.target.value)}
-        >
-          <option value="">All types</option>
-          <option value="revenue">Revenue</option>
-          <option value="expense">Expense</option>
-        </Select>
+        <Label>Type</Label>
+        <ToggleGroup
+          variant="segmented"
+          label="Filter by type"
+          value={(current.type as "" | "revenue" | "expense") ?? ""}
+          onChange={(v) => setParam("type", v)}
+          options={[
+            { value: "", label: "All" },
+            { value: "revenue", label: "Revenue" },
+            { value: "expense", label: "Expense" },
+          ]}
+        />
       </div>
       <div>
         <Label htmlFor="f-cat">Category</Label>
@@ -151,6 +255,11 @@ export function TransactionList({
   // Group consecutive rows by month (list is already sorted newest-first) so
   // businesses can see their transactions organized Jan–Dec at a glance.
   const monthKeys = transactions.map((t) => t.occurred_on.slice(0, 7));
+  const monthNet: Record<string, number> = {};
+  transactions.forEach((t, i) => {
+    const key = monthKeys[i];
+    monthNet[key] = (monthNet[key] ?? 0) + (t.type === "revenue" ? Number(t.amount) : -Number(t.amount));
+  });
 
   return (
     <Card>
@@ -158,7 +267,7 @@ export function TransactionList({
         <table className="w-full text-sm">
           <caption className="sr-only">Your transactions</caption>
           <thead>
-            <tr className="border-b border-border text-left text-xs uppercase text-muted">
+            <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-soft">
               <th scope="col" className="px-4 py-3 font-medium">Date</th>
               <th scope="col" className="px-4 py-3 font-medium">Description</th>
               <th scope="col" className="px-4 py-3 font-medium">Category</th>
@@ -178,6 +287,7 @@ export function TransactionList({
                   tx={t}
                   categories={categories}
                   monthLabel={showHeader ? `${MONTH_NAMES[Number(m) - 1]} ${y}` : null}
+                  monthNet={showHeader ? monthNet[monthKeys[i]] : null}
                 />
               );
             })}
@@ -192,10 +302,12 @@ function MonthGroupedRow({
   tx,
   categories,
   monthLabel,
+  monthNet,
 }: {
   tx: Transaction;
   categories: Category[];
   monthLabel: string | null;
+  monthNet: number | null;
 }) {
   return (
     <>
@@ -204,9 +316,15 @@ function MonthGroupedRow({
           <th
             scope="colgroup"
             colSpan={5}
-            className="bg-accent/40 px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted"
+            className="bg-surface-sunken-2 px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-muted"
           >
-            {monthLabel}
+            <div className="flex items-center justify-between">
+              <span>{monthLabel}</span>
+              <span className="font-mono font-medium normal-case tracking-normal">
+                Net {monthNet != null && monthNet >= 0 ? "+" : "−"}
+                {formatCurrency(Math.abs(monthNet ?? 0))}
+              </span>
+            </div>
           </th>
         </tr>
       ) : null}
@@ -249,7 +367,9 @@ function TransactionRow({ tx, categories }: { tx: Transaction; categories: Categ
   return (
     <>
       <tr className="border-b border-border last:border-0">
-        <td className="whitespace-nowrap px-4 py-3 text-muted">{formatDate(tx.occurred_on)}</td>
+        <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-muted-soft">
+          {formatDate(tx.occurred_on)}
+        </td>
         <td className="px-4 py-3">
           {tx.description || <span className="text-muted">—</span>}
           {isChild ? <span className="ml-2 text-xs text-muted">(split)</span> : null}
@@ -271,12 +391,12 @@ function TransactionRow({ tx, categories }: { tx: Transaction; categories: Categ
             ))}
           </Select>
         </td>
-        <td className="px-4 py-3 text-right font-medium">
+        <td className="px-4 py-3 text-right font-mono font-medium">
           <span className={tx.type === "revenue" ? "text-success" : "text-foreground"}>
             {tx.type === "revenue" ? "+" : "−"}
             {formatCurrency(Number(tx.amount))}
           </span>
-          <div>
+          <div className="font-sans">
             <Badge tone={tx.type === "revenue" ? "success" : "default"}>{tx.type}</Badge>
           </div>
         </td>
