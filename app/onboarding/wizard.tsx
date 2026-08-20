@@ -98,6 +98,10 @@ export function OnboardingWizard({
   return (
     <div>
       <div className="mb-6">
+        <div className="mb-3 flex items-center gap-2" aria-hidden="true">
+          <span className={`h-1.5 flex-1 rounded-full ${step >= 1 ? "bg-primary" : "bg-surface-sunken"}`} />
+          <span className={`h-1.5 flex-1 rounded-full ${step >= 2 ? "bg-primary" : "bg-surface-sunken"}`} />
+        </div>
         <p className="text-sm font-medium text-primary">
           Step {step} of 2
         </p>
