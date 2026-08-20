@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Sparkles, Check, X, ChevronDown } from "lucide-react";
+import { Sparkles, Check, X, ChevronDown, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge, EmptyState, RiskBadge } from "@/components/ui/misc";
@@ -84,56 +84,57 @@ function RecommendationCard({
 
   return (
     <Card className={rec.status === "new" ? "border-primary/30" : undefined}>
-      <CardContent className="pt-5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="mb-1 flex flex-wrap items-center gap-2">
-              <h3 className="font-semibold text-foreground">{rec.title}</h3>
-              <RiskBadge level={rec.risk_level} />
-              {rec.status === "new" ? <Badge tone="primary">New</Badge> : null}
+      <CardContent className="flex gap-4 pt-5">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+          <Lightbulb className="h-5 w-5" aria-hidden="true" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="mb-1 flex flex-wrap items-center gap-2">
+            <h3 className="font-semibold text-foreground">{rec.title}</h3>
+            <RiskBadge level={rec.risk_level} />
+            {rec.status === "new" ? <Badge tone="primary">New</Badge> : null}
+          </div>
+          <p className="text-sm text-foreground">{rec.body}</p>
+
+          {open ? (
+            <div className="mt-3 space-y-3 border-t border-border pt-3">
+              {rec.rationale ? (
+                <div>
+                  <p className="text-xs font-medium uppercase text-muted">Why</p>
+                  <p className="text-sm text-foreground">{rec.rationale}</p>
+                </div>
+              ) : null}
+              {dataEntries.length > 0 ? (
+                <div>
+                  <p className="text-xs font-medium uppercase text-muted">Supporting data</p>
+                  <dl className="mt-1 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                    {dataEntries.map(([k, v]) => (
+                      <div key={k} className="flex justify-between gap-2">
+                        <dt className="truncate text-muted">{k}</dt>
+                        <dd className="text-foreground">{String(v)}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              ) : null}
             </div>
-            <p className="text-sm text-foreground">{rec.body}</p>
-          </div>
-        </div>
+          ) : null}
 
-        {open ? (
-          <div className="mt-3 space-y-3 border-t border-border pt-3">
-            {rec.rationale ? (
-              <div>
-                <p className="text-xs font-medium uppercase text-muted">Why</p>
-                <p className="text-sm text-foreground">{rec.rationale}</p>
-              </div>
-            ) : null}
-            {dataEntries.length > 0 ? (
-              <div>
-                <p className="text-xs font-medium uppercase text-muted">Supporting data</p>
-                <dl className="mt-1 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                  {dataEntries.map(([k, v]) => (
-                    <div key={k} className="flex justify-between gap-2">
-                      <dt className="truncate text-muted">{k}</dt>
-                      <dd className="text-foreground">{String(v)}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-
-        <div className="mt-3 flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => setOpen((o) => !o)}>
-            <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
-            {open ? "Less" : "Details"}
-          </Button>
-          <div className="ml-auto flex gap-1">
-            {rec.status === "new" ? (
-              <Button variant="ghost" size="sm" onClick={() => setStatus("read")} disabled={pending}>
-                <Check className="h-4 w-4" /> Mark read
-              </Button>
-            ) : null}
-            <Button variant="ghost" size="sm" onClick={() => setStatus("dismissed")} disabled={pending}>
-              <X className="h-4 w-4" /> Dismiss
+          <div className="mt-3 flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => setOpen((o) => !o)}>
+              <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
+              {open ? "Less" : "Details"}
             </Button>
+            <div className="ml-auto flex gap-2">
+              {rec.status === "new" ? (
+                <Button size="sm" onClick={() => setStatus("read")} disabled={pending}>
+                  <Check className="h-4 w-4" /> Mark read
+                </Button>
+              ) : null}
+              <Button variant="ghost" size="sm" onClick={() => setStatus("dismissed")} disabled={pending}>
+                <X className="h-4 w-4" /> Dismiss
+              </Button>
+            </div>
           </div>
         </div>
       </CardContent>

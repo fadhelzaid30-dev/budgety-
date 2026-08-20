@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { FileText, Mail } from "lucide-react";
+import { ChevronDown, FileText, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge, EmptyState } from "@/components/ui/misc";
@@ -60,22 +60,33 @@ function ReportCard({ report }: { report: Report }) {
 
   return (
     <Card>
-      <CardContent className="pt-5">
-        <button
-          className="flex w-full items-center justify-between text-left"
-          onClick={() => setOpen((o) => !o)}
-          aria-expanded={open}
-        >
-          <div>
-            <p className="font-semibold text-foreground">
-              Week of {formatDate(report.period_start)} – {formatDate(report.period_end)}
-            </p>
-            <p className="text-sm text-muted line-clamp-1">{c.summary}</p>
+      <CardContent className="flex gap-4 pt-5">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-background-alt text-muted">
+          <FileText className="h-4 w-4" aria-hidden="true" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="font-semibold text-foreground">
+                Week of {formatDate(report.period_start)} – {formatDate(report.period_end)}
+              </p>
+              <p className="text-sm text-muted line-clamp-1">{c.summary}</p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <Badge tone={emailTone}>
+                <Mail className="mr-1 h-3 w-3" /> {report.email_status}
+              </Badge>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setOpen((o) => !o)}
+                aria-expanded={open}
+                aria-label={open ? "Collapse report" : "Expand report"}
+              >
+                <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
+              </Button>
+            </div>
           </div>
-          <Badge tone={emailTone}>
-            <Mail className="mr-1 h-3 w-3" /> {report.email_status}
-          </Badge>
-        </button>
 
         {open ? (
           <div className="mt-4 space-y-4 border-t border-border pt-4 text-sm">
@@ -96,6 +107,7 @@ function ReportCard({ report }: { report: Report }) {
             </Section>
           </div>
         ) : null}
+        </div>
       </CardContent>
     </Card>
   );
