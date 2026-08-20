@@ -1,6 +1,7 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { UserButton } from "@clerk/nextjs";
 import { Bell, Search } from "lucide-react";
+import { clerkAppearance } from "@/lib/clerk-appearance";
 import type { Business } from "@/types";
 
 /**
@@ -55,8 +56,8 @@ export async function AppHeader({ business }: { business: Business }) {
       <div className="flex shrink-0 items-center gap-2.5 border-l border-border pl-4">
         <UserButton
           appearance={{
-            variables: { colorPrimary: "#4d44b5" },
-            elements: { avatarBox: "h-10 w-10" },
+            ...clerkAppearance,
+            elements: { ...clerkAppearance?.elements, avatarBox: "h-10 w-10" },
           }}
         />
         <div className="hidden flex-col sm:flex">
