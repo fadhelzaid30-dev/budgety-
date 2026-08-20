@@ -2,8 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Send } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import type { AiConversationMessage } from "@/types";
 
@@ -121,22 +119,30 @@ export function Chat({ initialMessages }: { initialMessages: AiConversationMessa
       </div>
 
       <form
-        className="flex gap-2 border-t border-border p-3"
+        className="border-t border-border p-4"
         onSubmit={(e) => {
           e.preventDefault();
           send(input);
         }}
       >
-        <Input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask about a purchase, hire, or decision…"
-          aria-label="Message the AI CFO"
-          disabled={streaming}
-        />
-        <Button type="submit" disabled={streaming || !input.trim()} aria-label="Send message">
-          <Send className="h-4 w-4" />
-        </Button>
+        <div className="flex h-11 items-center gap-2 rounded-full border border-border bg-card pl-4 pr-1.5 focus-within:ring-2 focus-within:ring-primary">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ask about your numbers…"
+            aria-label="Message the AI CFO"
+            disabled={streaming}
+            className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted disabled:opacity-50"
+          />
+          <button
+            type="submit"
+            disabled={streaming || !input.trim()}
+            aria-label="Send message"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary-hover disabled:pointer-events-none disabled:opacity-50"
+          >
+            <Send className="h-4 w-4" />
+          </button>
+        </div>
       </form>
     </div>
   );
