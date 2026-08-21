@@ -30,10 +30,10 @@
   --sidebar-to: #1a1751;
 
   --accent: #f1f1f8;
-  --success: #2d9d78;
+  --success: #247d60;
   --success-soft: #6ee7b7;
-  --warning: #f59e0b;
-  --danger: #ef4444;
+  --warning: #b45309;
+  --danger: #cb3939;
   --danger-soft: #f87171;
 
   --gradient-sidebar: linear-gradient(180deg, var(--sidebar-from) 0%, var(--sidebar-to) 100%);

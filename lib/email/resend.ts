@@ -22,9 +22,9 @@ function escapeHtml(s: string): string {
 
 export function renderReportEmail(business: Business, report: ReportContent, appUrl: string): string {
   return `<!doctype html>
-<html><body style="font-family:Arial,Helvetica,sans-serif;background:#f8fafc;padding:24px;color:#0f172a">
-  <div style="max-width:600px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden">
-    <div style="background:#0d9488;padding:20px 24px;color:#fff">
+<html><body style="font-family:Arial,Helvetica,sans-serif;background:#f8f9fd;padding:24px;color:#1b1b3a">
+  <div style="max-width:600px;margin:0 auto;background:#fff;border:1px solid #e9e9f4;border-radius:12px;overflow:hidden">
+    <div style="background:#4d44b5;padding:20px 24px;color:#fff">
       <h1 style="margin:0;font-size:18px">Budgety — Weekly Report</h1>
       <p style="margin:4px 0 0;font-size:13px;opacity:.9">${escapeHtml(business.name)}</p>
     </div>
@@ -44,7 +44,7 @@ export function renderReportEmail(business: Business, report: ReportContent, app
       <h2 style="font-size:15px;margin:16px 0 8px">Recommended actions</h2>
       <ul style="font-size:14px;line-height:1.5;padding-left:18px;margin:0 0 16px">${list(report.actions)}</ul>
 
-      <a href="${appUrl}/dashboard" style="display:inline-block;margin-top:8px;background:#0d9488;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;font-size:14px">Open dashboard</a>
+      <a href="${appUrl}/dashboard" style="display:inline-block;margin-top:8px;background:#4d44b5;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;font-size:14px">Open dashboard</a>
     </div>
   </div>
 </body></html>`;

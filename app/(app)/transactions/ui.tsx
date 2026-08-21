@@ -122,7 +122,7 @@ function StatCard({
           {value}
         </span>
         {sub ? (
-          <span className={`text-xs ${subTone === "primary" ? "font-medium text-primary" : "text-muted-soft"}`}>
+          <span className={`text-xs ${subTone === "primary" ? "font-medium text-primary" : "text-muted"}`}>
             {sub}
           </span>
         ) : null}
@@ -267,7 +267,7 @@ export function TransactionList({
         <table className="w-full text-sm">
           <caption className="sr-only">Your transactions</caption>
           <thead>
-            <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-soft">
+            <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted">
               <th scope="col" className="px-4 py-3 font-medium">Date</th>
               <th scope="col" className="px-4 py-3 font-medium">Description</th>
               <th scope="col" className="px-4 py-3 font-medium">Category</th>
@@ -367,7 +367,7 @@ function TransactionRow({ tx, categories }: { tx: Transaction; categories: Categ
   return (
     <>
       <tr className="border-b border-border last:border-0">
-        <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-muted-soft">
+        <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-muted">
           {formatDate(tx.occurred_on)}
         </td>
         <td className="px-4 py-3">
