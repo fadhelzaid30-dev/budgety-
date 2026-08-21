@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, DM_Sans } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ToastProvider } from "@/components/ui/toast";
+import { clerkLocalization } from "@/lib/clerk-localization";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -32,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider afterSignOutUrl="/">
+    <ClerkProvider afterSignOutUrl="/" localization={clerkLocalization}>
       <html
         lang="en"
         className={`${geistSans.variable} ${geistMono.variable} ${dmSans.variable} h-full antialiased`}

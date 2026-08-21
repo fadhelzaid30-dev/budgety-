@@ -39,6 +39,12 @@
   --gradient-sidebar: linear-gradient(180deg, var(--sidebar-from) 0%, var(--sidebar-to) 100%);
   --gradient-logomark: linear-gradient(135deg, var(--secondary-from) 0%, var(--secondary-to) 100%);
   --gradient-warm: linear-gradient(135deg, var(--accent-warm-from) 0%, var(--accent-warm-to) 100%);
+
+  /* Auth pages only: a deeper, more saturated variant of the sidebar gradient,
+     used behind the ripple/orbit animation where the sidebar's own gradient
+     would be too light for the animated layers to read against. */
+  --gradient-auth-panel: linear-gradient(160deg, #231f6b 0%, #14141a 100%);
+  --gradient-submit: linear-gradient(135deg, var(--sidebar-from) 0%, var(--secondary-from) 100%);
 }
 
 @theme inline {
@@ -98,6 +104,28 @@ body {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
+
+/* Auth panel ripple + orbit animation (Sign in / Sign up left panel only). */
+@keyframes auth-ripple {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(0.9); }
+}
+.animate-auth-ripple {
+  animation: auth-ripple 2s ease infinite;
+}
+@keyframes auth-orbit {
+  from { transform: rotate(0deg) translateY(calc(var(--orbit-radius) * 1px)) rotate(0deg); }
+  to { transform: rotate(360deg) translateY(calc(var(--orbit-radius) * 1px)) rotate(-360deg); }
+}
+.animate-auth-orbit {
+  animation: auth-orbit calc(var(--orbit-duration) * 1s) linear infinite;
+  animation-delay: calc(var(--orbit-delay) * -1s);
+}
+.animate-auth-orbit-reverse {
+  animation-direction: reverse;
+}
+/* The existing global prefers-reduced-motion rule below already forces
+   animation-duration to 0.01ms on every element, covering these too. */
 
 /* Marketing landing page hero background. */
 .bg-hero-gradient {
