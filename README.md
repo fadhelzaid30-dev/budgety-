@@ -77,6 +77,21 @@ curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/week
 - **Health score** — six weighted factors in `lib/finance/healthScore.ts`. Debt ratio is a
   documented neutral placeholder (liabilities aren't tracked in the MVP).
 
+## Design
+
+Budgety's UI was rebranded from an early teal/slate look to a purple/indigo
+system (primary `#4d44b5`, DM Sans for UI text, Geist reserved for display
+headlines, Geist Mono for figures) matching a prototype built in Claude
+Design. All design tokens (color, radius, spacing, gradients) live in
+`app/globals.css` under `:root` and are mapped into Tailwind via `@theme
+inline` — there's no `tailwind.config.js`, since the project runs Tailwind
+v4's CSS-first configuration.
+
+Chart colors (`lib/chart-colors.ts`) are a deliberately duplicated set of
+hex constants, kept in sync with `globals.css` by hand, because Recharts and
+raw SVG can't consume CSS custom properties. See `PROJECT_LOG.md` for the
+full history of the rebrand and everything since.
+
 ## Project layout
 
 ```
