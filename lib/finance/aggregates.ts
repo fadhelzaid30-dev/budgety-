@@ -9,12 +9,29 @@ export interface MonthlyPoint {
   net: number;
 }
 
+/** One category's spend in the last full month vs the month before it. */
+export interface CategoryTrend {
+  name: string;
+  current: number;
+  previous: number;
+  delta: number;
+  /** null when `previous` was 0 — percentage change from nothing is undefined. */
+  deltaPct: number | null;
+}
+
 export interface FinancialAggregates {
   cashBalance: number;
   revenue: { day: number; week: number; month: number; ytd: number };
   expenses: { day: number; week: number; month: number; ytd: number };
   profitLoss: { month: number; ytd: number };
   expensesByCategory: { name: string; amount: number }[];
+  /**
+   * Per-category month-over-month movement, biggest absolute change first.
+   * This is the dimension the app was missing — "what's causing my profit to
+   * change" can't be answered from YTD category totals plus monthly grand
+   * totals, which is all that existed.
+   */
+  categoryTrends: CategoryTrend[];
   monthlyBurn: number; // avg monthly expense over trailing 3 full months
   runwayMonths: number | null; // cash / monthlyBurn
   netCashFlow30d: number;
@@ -24,8 +41,19 @@ export interface FinancialAggregates {
   transactionCount: number;
 }
 
+/**
+ * Local-date yyyy-mm-dd.
+ *
+ * This used to be `toISOString().slice(0,10)`, which is UTC, while monthKey and
+ * the month/year boundaries below are local — so for any user west of UTC late
+ * in the day, "today" resolved to tomorrow and revenue.day read the wrong date.
+ * Everything here is now consistently local, matching formatDate in lib/utils,
+ * which parses yyyy-mm-dd as local for the same reason.
+ */
 function ymd(d: Date): string {
-  return d.toISOString().slice(0, 10);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
 }
 
 function monthKey(d: Date): string {
@@ -131,12 +159,42 @@ export function computeAggregates(
   const revenueGrowthMoM = prior && last ? pct(prior.revenue, last.revenue) : null;
   const expenseTrendPct = prior && last ? pct(prior.expense, last.expense) : null;
 
+  // Per-category movement between the two most recent full months. Partial
+  // months are excluded on both sides so the comparison is like-for-like.
+  const categoryTrends: CategoryTrend[] = [];
+  if (prior && last) {
+    const spendByCategory = (key: string) => {
+      const m = new Map<string, number>();
+      for (const t of txns) {
+        if (!isExpense(t) || !t.occurred_on.startsWith(key)) continue;
+        const name = t.category?.name ?? UNCATEGORIZED;
+        m.set(name, (m.get(name) ?? 0) + Number(t.amount));
+      }
+      return m;
+    };
+    const cur = spendByCategory(last.month);
+    const prv = spendByCategory(prior.month);
+    for (const name of new Set([...cur.keys(), ...prv.keys()])) {
+      const current = cur.get(name) ?? 0;
+      const previous = prv.get(name) ?? 0;
+      categoryTrends.push({
+        name,
+        current,
+        previous,
+        delta: current - previous,
+        deltaPct: pct(previous, current),
+      });
+    }
+    categoryTrends.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+  }
+
   return {
     cashBalance,
     revenue,
     expenses,
     profitLoss: { month: revenue.month - expenses.month, ytd: revenue.ytd - expenses.ytd },
     expensesByCategory,
+    categoryTrends,
     monthlyBurn,
     runwayMonths,
     netCashFlow30d,
