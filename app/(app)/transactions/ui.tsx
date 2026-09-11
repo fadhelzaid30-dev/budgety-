@@ -18,6 +18,7 @@ import { Card } from "@/components/ui/card";
 import { Input, Label, Select } from "@/components/ui/input";
 import { Badge, EmptyState } from "@/components/ui/misc";
 import { ToggleGroup } from "@/components/ui/toggle-group";
+import { Alert } from "@/components/ui/alert";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
   deleteRecurrenceGroup,
@@ -474,7 +475,7 @@ function SplitForm({
       <p className="text-sm font-medium text-foreground">
         Split {formatCurrency(target)} into parts (must add up to the total)
       </p>
-      {error ? <p className="text-sm text-danger" role="alert">{error}</p> : null}
+      {error ? <Alert tone="danger">{error}</Alert> : null}
       {parts.map((p, i) => (
         <div key={i} className="flex gap-2">
           <Input

@@ -39,9 +39,6 @@ export function ConfirmDialog({
   const panelRef = React.useRef<HTMLDivElement>(null);
   const confirmRef = React.useRef<HTMLButtonElement>(null);
   const restoreRef = React.useRef<HTMLElement | null>(null);
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => setMounted(true), []);
 
   React.useEffect(() => {
     if (!open) return;
@@ -83,7 +80,9 @@ export function ConfirmDialog({
     };
   }, [open, onCancel]);
 
-  if (!mounted || !open) return null;
+  // `open` only becomes true from a user interaction, so there's no server
+  // render to guard against beyond the document check itself.
+  if (!open || typeof document === "undefined") return null;
 
   return createPortal(
     <div

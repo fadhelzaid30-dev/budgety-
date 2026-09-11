@@ -6,6 +6,7 @@ import { Check, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input, Label, Select } from "@/components/ui/input";
+import { Alert } from "@/components/ui/alert";
 import { saveBusinessProfile, finishOnboarding } from "@/lib/actions/business";
 import { createTransaction } from "@/lib/actions/transactions";
 import {
@@ -116,9 +117,9 @@ export function OnboardingWizard({
       </div>
 
       {error ? (
-        <div role="alert" className="mb-4 rounded-md bg-danger/10 px-4 py-2 text-sm text-danger">
+        <Alert tone="danger" className="mb-4">
           {error}
-        </div>
+        </Alert>
       ) : null}
 
       {step === 1 ? (

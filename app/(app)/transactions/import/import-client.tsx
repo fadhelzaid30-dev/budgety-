@@ -3,9 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import Papa from "papaparse";
-import { CheckCircle2, FileUp } from "lucide-react";
+import { CheckCircle2, FileUp, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Alert } from "@/components/ui/alert";
 import { Label, Select } from "@/components/ui/input";
 import {
   guessColumn,
@@ -25,7 +26,12 @@ export function CsvImport() {
   const [rows, setRows] = useState<RawRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ imported: number; skipped: number } | null>(null);
+  const [result, setResult] = useState<{
+    imported: number;
+    skipped: number;
+    duplicatesSkipped: number;
+  } | null>(null);
+  const [skipDuplicates, setSkipDuplicates] = useState(true);
 
   const [mapping, setMapping] = useState<ColumnMapping>({
     date: "",
@@ -79,14 +85,18 @@ export function CsvImport() {
       const res = await fetch("/api/transactions/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rows, mapping }),
+        body: JSON.stringify({ rows, mapping, skipDuplicates }),
       });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? "Import failed.");
         return;
       }
-      setResult({ imported: data.imported, skipped: data.skipped });
+      setResult({
+        imported: data.imported,
+        skipped: data.skipped,
+        duplicatesSkipped: data.duplicatesSkipped ?? 0,
+      });
       setStage("done");
     } catch {
       setError("Network error during import.");
@@ -96,17 +106,41 @@ export function CsvImport() {
   }
 
   if (stage === "done" && result) {
+    const nothing = result.imported === 0;
     return (
       <Card>
         <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-          <CheckCircle2 className="h-10 w-10 text-success" />
+          <div
+            className={`flex h-12 w-12 items-center justify-center rounded-xl ${
+              nothing ? "bg-warning/10" : "bg-success/10"
+            }`}
+          >
+            {nothing ? (
+              <TriangleAlert className="h-6 w-6 text-warning" />
+            ) : (
+              <CheckCircle2 className="h-6 w-6 text-success" />
+            )}
+          </div>
           <p className="text-lg font-semibold text-foreground">
-            Imported {result.imported} transaction{result.imported === 1 ? "" : "s"}
+            {nothing
+              ? "Nothing new to import"
+              : `Imported ${result.imported} transaction${result.imported === 1 ? "" : "s"}`}
           </p>
-          {result.skipped > 0 ? (
-            <p className="text-sm text-muted">{result.skipped} row(s) skipped due to invalid data.</p>
-          ) : null}
-          <Button onClick={() => router.push("/transactions")}>View transactions</Button>
+          <div className="space-y-1 text-sm text-muted">
+            {result.duplicatesSkipped > 0 ? (
+              <p>
+                {result.duplicatesSkipped} row
+                {result.duplicatesSkipped === 1 ? " was" : "s were"} already in your
+                transactions and {result.duplicatesSkipped === 1 ? "was" : "were"} skipped.
+              </p>
+            ) : null}
+            {result.skipped > 0 ? (
+              <p>{result.skipped} row(s) skipped — invalid date or amount.</p>
+            ) : null}
+          </div>
+          <Button className="mt-2" onClick={() => router.push("/transactions")}>
+            View transactions
+          </Button>
         </CardContent>
       </Card>
     );
@@ -134,7 +168,7 @@ export function CsvImport() {
               }}
             />
           </label>
-          {error ? <p className="mt-3 text-sm text-danger" role="alert">{error}</p> : null}
+          {error ? <Alert tone="danger" className="mt-3">{error}</Alert> : null}
         </CardContent>
       </Card>
     );
@@ -144,7 +178,7 @@ export function CsvImport() {
   return (
     <div className="space-y-4">
       {error ? (
-        <div role="alert" className="rounded-md bg-danger/10 px-4 py-2 text-sm text-danger">{error}</div>
+        <Alert tone="danger">{error}</Alert>
       ) : null}
       <Card>
         <CardContent className="space-y-4 pt-5">
@@ -234,15 +268,38 @@ export function CsvImport() {
         <p className="text-sm text-muted">Select at least the date and amount columns to preview.</p>
       )}
 
-      <div className="flex justify-end gap-2">
-        <Button variant="ghost" onClick={() => setStage("upload")}>Choose another file</Button>
-        <Button
-          onClick={doImport}
-          disabled={busy || !mapping.date || !mapping.amount || (preview?.valid.length ?? 0) === 0}
-        >
-          {busy ? "Importing…" : `Import ${rows.length} rows`}
-        </Button>
-      </div>
+      <Card>
+        <CardContent className="flex flex-wrap items-center justify-between gap-4">
+          <label className="flex cursor-pointer items-start gap-2.5 text-sm">
+            <input
+              type="checkbox"
+              checked={skipDuplicates}
+              onChange={(e) => setSkipDuplicates(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded-sm border-border accent-[var(--primary)]"
+            />
+            <span>
+              <span className="font-medium text-foreground">Skip rows I already have</span>
+              <span className="mt-0.5 block text-xs text-muted">
+                Matches on date, amount, type and description. Leave this on unless
+                you&apos;re deliberately importing genuine repeat transactions.
+              </span>
+            </span>
+          </label>
+
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={() => setStage("upload")}>
+              Choose another file
+            </Button>
+            <Button
+              onClick={doImport}
+              loading={busy}
+              disabled={!mapping.date || !mapping.amount || (preview?.valid.length ?? 0) === 0}
+            >
+              Import {rows.length} row{rows.length === 1 ? "" : "s"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

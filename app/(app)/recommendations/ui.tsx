@@ -6,6 +6,7 @@ import { Sparkles, Check, X, ChevronDown, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge, EmptyState, RiskBadge } from "@/components/ui/misc";
+import { Alert } from "@/components/ui/alert";
 import {
   generateWeeklyRecommendations,
   updateRecommendationStatus,
@@ -43,9 +44,9 @@ export function RecommendationsView({
       </div>
 
       {error ? (
-        <div role="alert" className="rounded-md bg-danger/10 px-4 py-2 text-sm text-danger">
+        <Alert tone="danger">
           {error}
-        </div>
+        </Alert>
       ) : null}
 
       {recommendations.length === 0 ? (

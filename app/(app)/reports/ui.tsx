@@ -6,6 +6,7 @@ import { ChevronDown, FileText, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge, EmptyState } from "@/components/ui/misc";
+import { Alert } from "@/components/ui/alert";
 import { generateReportNow } from "@/lib/actions/reports";
 import { formatDate } from "@/lib/utils";
 import type { Report } from "@/types";
@@ -34,9 +35,9 @@ export function ReportsView({ reports }: { reports: Report[] }) {
       </div>
 
       {error ? (
-        <div role="alert" className="rounded-md bg-danger/10 px-4 py-2 text-sm text-danger">
+        <Alert tone="danger">
           {error}
-        </div>
+        </Alert>
       ) : null}
 
       {reports.length === 0 ? (

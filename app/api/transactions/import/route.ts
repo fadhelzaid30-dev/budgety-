@@ -3,7 +3,9 @@ import { auth } from "@clerk/nextjs/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getCurrentBusiness, getCategories } from "@/lib/data/queries";
 import { normalizeRows, type ColumnMapping, type RawRow } from "@/lib/csv/mapping";
+import { dateRange, scanForDuplicates } from "@/lib/csv/dedupe";
 import { categorizeByRules, FALLBACK_CATEGORY } from "@/lib/categorize/rules";
+import type { Transaction } from "@/types";
 
 const MAX_ROWS = 5000;
 
@@ -14,7 +16,7 @@ export async function POST(req: NextRequest) {
   const business = await getCurrentBusiness();
   if (!business) return NextResponse.json({ error: "No business found" }, { status: 400 });
 
-  let body: { rows?: RawRow[]; mapping?: ColumnMapping };
+  let body: { rows?: RawRow[]; mapping?: ColumnMapping; skipDuplicates?: boolean };
   try {
     body = await req.json();
   } catch {
@@ -22,6 +24,9 @@ export async function POST(req: NextRequest) {
   }
 
   const { rows, mapping } = body;
+  // Default to skipping. Re-uploading the same export is a far more common
+  // accident than deliberately importing a genuine repeat.
+  const skipDuplicates = body.skipDuplicates !== false;
   if (!Array.isArray(rows) || !mapping?.date || !mapping?.amount) {
     return NextResponse.json({ error: "Missing rows or column mapping" }, { status: 400 });
   }
@@ -40,6 +45,35 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const supabase = await createServerSupabase();
+
+  // Duplicate check, scoped to the date range the file actually covers so a
+  // narrow import doesn't pull the whole ledger.
+  const range = dateRange(valid);
+  type ExistingRow = Pick<Transaction, "occurred_on" | "amount" | "type" | "description">;
+  let existing: ExistingRow[] = [];
+  if (range) {
+    const { data } = await supabase
+      .from("transactions")
+      .select("occurred_on, amount, type, description")
+      .gte("occurred_on", range.from)
+      .lte("occurred_on", range.to);
+    existing = (data ?? []) as ExistingRow[];
+  }
+  const scan = scanForDuplicates(valid, existing);
+  const toInsert = skipDuplicates ? scan.unique : valid;
+
+  if (toInsert.length === 0) {
+    return NextResponse.json({
+      imported: 0,
+      skipped: errors.length,
+      duplicates: scan.duplicates.length,
+      errors: errors.slice(0, 20),
+      message:
+        "Every row in this file is already in your transactions — nothing was imported.",
+    });
+  }
+
   // Build a category name → id map once (business categories + system defaults).
   const categories = await getCategories(business.id);
   const catByName = new Map<string, string>();
@@ -48,7 +82,7 @@ export async function POST(req: NextRequest) {
     if (c.business_id || !catByName.has(c.name)) catByName.set(c.name, c.id);
   }
 
-  const inserts = valid.map((t) => {
+  const inserts = toInsert.map((t) => {
     const name = categorizeByRules(t.description, t.type) ?? FALLBACK_CATEGORY;
     return {
       business_id: business.id,
@@ -62,7 +96,6 @@ export async function POST(req: NextRequest) {
     };
   });
 
-  const supabase = await createServerSupabase();
   const { error, count } = await supabase
     .from("transactions")
     .insert(inserts, { count: "exact" });
@@ -74,6 +107,8 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     imported: count ?? inserts.length,
     skipped: errors.length,
+    duplicates: scan.duplicates.length,
+    duplicatesSkipped: skipDuplicates ? scan.duplicates.length : 0,
     errors: errors.slice(0, 20),
   });
 }

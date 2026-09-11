@@ -10,6 +10,7 @@ import { Input, Label, Select } from "@/components/ui/input";
 import { Tabs } from "@/components/ui/tabs";
 import { ToggleGroup } from "@/components/ui/toggle-group";
 import { useToast } from "@/components/ui/toast";
+import { Alert } from "@/components/ui/alert";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
   createRecurringTransactions,
@@ -185,9 +186,9 @@ function ManualForm({ categories, onDone }: { categories: Category[]; onDone: ()
   return (
     <div className="space-y-5">
       {error ? (
-        <div role="alert" className="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">
+        <Alert tone="danger">
           {error}
-        </div>
+        </Alert>
       ) : null}
 
       <div>
@@ -366,7 +367,15 @@ function CsvTab({ onDone }: { onDone: () => void }) {
         setError(data.error ?? "Import failed.");
         return;
       }
-      toast.show(`Imported ${data.imported} transaction${data.imported === 1 ? "" : "s"}.`);
+      if (data.imported === 0) {
+        setError(data.message ?? "Nothing was imported.");
+        return;
+      }
+      const dupes = data.duplicatesSkipped ?? 0;
+      toast.show(
+        `Imported ${data.imported} transaction${data.imported === 1 ? "" : "s"}` +
+          (dupes > 0 ? ` — skipped ${dupes} already in your account.` : "."),
+      );
       onDone();
       const firstDate = preview?.valid[0]?.occurred_on;
       if (firstDate) navigateToMonth(router, firstDate);
@@ -381,9 +390,9 @@ function CsvTab({ onDone }: { onDone: () => void }) {
   return (
     <div className="space-y-5">
       {error ? (
-        <div role="alert" className="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">
+        <Alert tone="danger">
           {error}
-        </div>
+        </Alert>
       ) : null}
 
       {!mapping ? (
