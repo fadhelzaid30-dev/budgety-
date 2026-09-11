@@ -28,23 +28,23 @@ export default async function AppLayout({
       >
         <Link href="/dashboard" className="flex flex-col gap-0.5 px-3 pt-2">
           <WordMark variant="light" size={20} />
-          <span className="truncate text-xs text-white/50">{business.name}</span>
+          <span className="truncate text-xs text-on-dark-muted">{business.name}</span>
         </Link>
 
         <div className="flex flex-col gap-2">
-          <span className="px-3 text-xs font-medium uppercase tracking-wide text-white/40">
+          <span className="px-3 text-xs font-medium uppercase tracking-wide text-on-dark-subtle">
             Main menu
           </span>
           <AppNav variant="sidebar" />
         </div>
 
         <div className="mt-auto flex flex-col gap-2">
-          <span className="px-3 text-xs font-medium uppercase tracking-wide text-white/40">
+          <span className="px-3 text-xs font-medium uppercase tracking-wide text-on-dark-subtle">
             Help &amp; support
           </span>
           <Link
-            href="/dashboard"
-            className="flex h-10 items-center gap-3 rounded-md px-3 text-sm text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+            href="/settings"
+            className="flex h-10 items-center gap-3 rounded-md px-3 text-sm text-on-dark-secondary transition-colors hover:bg-on-dark-surface hover:text-on-dark"
           >
             <Settings className="h-4 w-4" aria-hidden="true" />
             Settings

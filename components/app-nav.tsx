@@ -35,16 +35,24 @@ export function AppNav({
             href={href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              "relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
               variant === "sidebar"
                 ? active
-                  ? "bg-white/10 text-white"
-                  : "text-white/60 hover:bg-white/10 hover:text-white"
+                  ? "bg-on-dark-surface text-on-dark"
+                  : "text-on-dark-muted hover:bg-on-dark-surface hover:text-on-dark"
                 : active
                   ? "bg-primary/10 text-primary"
                   : "text-muted hover:bg-accent hover:text-foreground",
             )}
           >
+            {/* Active marker — colour alone is a weak signal against the
+                gradient, so the current item also gets a bright rail. */}
+            {active && variant === "sidebar" ? (
+              <span
+                aria-hidden="true"
+                className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-[image:var(--gradient-logomark)]"
+              />
+            ) : null}
             <Icon className="h-4 w-4" aria-hidden="true" />
             {label}
           </Link>

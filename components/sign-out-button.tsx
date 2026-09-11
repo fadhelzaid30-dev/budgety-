@@ -12,7 +12,7 @@ export function SignOutButton({ className }: { className?: string }) {
       type="button"
       onClick={() => signOut({ redirectUrl: "/" })}
       className={cn(
-        "flex h-10 w-full items-center gap-3 rounded-md px-3 text-left text-sm text-white/70 transition-colors hover:bg-white/10 hover:text-white",
+        "flex h-10 w-full items-center gap-3 rounded-md px-3 text-left text-sm text-on-dark-secondary transition-colors hover:bg-on-dark-surface hover:text-on-dark",
         className,
       )}
     >

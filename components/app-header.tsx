@@ -1,16 +1,17 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { UserButton } from "@clerk/nextjs";
-import { Bell, Search } from "lucide-react";
 import { clerkAppearance } from "@/lib/clerk-appearance";
+import { HeaderSearch } from "@/components/header-search";
 import type { Business } from "@/types";
 
 /**
- * Search and notifications are presentational only — neither feature
- * exists in the backend yet. "Owner" is a static label since the data
- * model has no per-user role concept (single-owner-per-business MVP).
- * The avatar is Clerk's own UserButton (styled to match) so account
- * management (email, security, etc.) stays reachable — it moved here
- * from the old sidebar position rather than being removed.
+ * "Owner" is a static label — the data model has no per-user role concept
+ * (single owner per business in this version). The avatar is Clerk's own
+ * UserButton, styled to match, so account management stays reachable.
+ *
+ * The notification bell that used to sit here was permanently disabled with no
+ * feature behind it; a control that can never be pressed is worse than no
+ * control. Search was disabled too and is now wired to the transactions page.
  */
 export async function AppHeader({ business }: { business: Business }) {
   const user = await currentUser();
@@ -18,42 +19,20 @@ export async function AppHeader({ business }: { business: Business }) {
   const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "You";
 
   return (
-    <header className="flex items-center gap-5 border-b border-border bg-card px-8 py-5">
+    <header className="flex items-center gap-5 border-b border-border bg-card px-4 py-4 md:px-8 md:py-5">
       <div className="flex min-w-0 flex-col gap-0.5">
-        <span
-          className="text-lg font-semibold"
-          style={{
-            background: "var(--gradient-warm)",
-            WebkitBackgroundClip: "text",
-            backgroundClip: "text",
-            color: "transparent",
-          }}
-        >
+        {/* Plain foreground, not the warm gradient: the brand rules cap the
+            coral/orange at accent use, and a greeting on every page is the most
+            prominent text in the app. */}
+        <span className="truncate text-lg font-semibold text-foreground">
           Welcome back, {firstName}
         </span>
         <span className="truncate text-xs text-muted">{business.name}</span>
       </div>
 
-      <div className="ml-auto flex h-10 w-[300px] items-center gap-2 rounded-full border border-border bg-background-alt px-3.5 text-muted-soft">
-        <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
-        <input
-          type="text"
-          placeholder="Search anything…"
-          className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-soft"
-          disabled
-        />
-      </div>
+      <HeaderSearch />
 
-      <button
-        type="button"
-        aria-label="Notifications"
-        disabled
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card text-muted hover:bg-background-alt disabled:cursor-default"
-      >
-        <Bell className="h-4 w-4" aria-hidden="true" />
-      </button>
-
-      <div className="flex shrink-0 items-center gap-2.5 border-l border-border pl-4">
+      <div className="ml-auto flex shrink-0 items-center gap-2.5 border-border pl-4 lg:ml-0 lg:border-l">
         <UserButton
           appearance={{
             ...clerkAppearance,
