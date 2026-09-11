@@ -8,7 +8,7 @@ import {
   CHART_GRID,
   CHART_FOREGROUND,
   CHART_MUTED,
-} from "@/lib/chart-colors";
+} from "@/lib/tokens";
 
 const FACTOR_LABELS: Record<string, string> = {
   cashFlow: "Cash flow",

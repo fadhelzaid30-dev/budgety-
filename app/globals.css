@@ -10,17 +10,14 @@
   --muted-soft: #8a8aa8;
   --muted-strong: #4a4a6a;
   --border: #e9e9f4;
-  --border-soft: #efeff7;
   --border-strong: #e4e4f0;
   --surface-sunken: #f1f1f8;
   --surface-sunken-2: #f5f4fb;
-  --divider: #d8d8e8;
 
   --primary: #4d44b5;
   --primary-foreground: #ffffff;
   --primary-hover: rgba(77, 68, 181, 0.9);
   --primary-soft: rgba(77, 68, 181, 0.1);
-  --primary-ring: rgba(77, 68, 181, 0.15);
 
   --secondary-from: #6c63ff;
   --secondary-to: #8f88ff;
@@ -30,11 +27,29 @@
   --sidebar-to: #1a1751;
 
   --accent: #f1f1f8;
+
+  /* Semantic colors come in two weights. TEXT weight passes WCAG AA on white
+     and is what `text-success` etc. resolve to. FILL weight (`-vivid`) is for
+     chart bars, gauge rings, and progress fills, where a large block of the
+     AA-compliant color reads muddy. Same hue in both, so a gauge and the badge
+     beside it are recognisably the same color. Never use -vivid for text.
+     Mirrored in lib/tokens.ts — scripts/check-tokens.mjs enforces the match. */
   --success: #247d60;
-  --success-soft: #6ee7b7;
+  --success-vivid: #2f9e78;
   --warning: #b45309;
+  --warning-vivid: #d97706;
   --danger: #cb3939;
-  --danger-soft: #f87171;
+  --danger-vivid: #e05050;
+
+  /* Text and surfaces on the dark sidebar / auth panel / hero, where none of
+     the light-surface tokens apply. Replaces 8 ad-hoc `white/NN` opacities. */
+  --on-dark: #ffffff;
+  --on-dark-secondary: rgba(255, 255, 255, 0.72);
+  --on-dark-muted: rgba(255, 255, 255, 0.55);
+  --on-dark-subtle: rgba(255, 255, 255, 0.4);
+  --on-dark-surface: rgba(255, 255, 255, 0.08);
+  --on-dark-surface-hover: rgba(255, 255, 255, 0.14);
+  --on-dark-border: rgba(255, 255, 255, 0.12);
 
   --gradient-sidebar: linear-gradient(180deg, var(--sidebar-from) 0%, var(--sidebar-to) 100%);
   --gradient-logomark: linear-gradient(135deg, var(--secondary-from) 0%, var(--secondary-to) 100%);
@@ -57,26 +72,60 @@
   --color-muted-soft: var(--muted-soft);
   --color-muted-strong: var(--muted-strong);
   --color-border: var(--border);
-  --color-border-soft: var(--border-soft);
   --color-border-strong: var(--border-strong);
   --color-surface-sunken: var(--surface-sunken);
   --color-surface-sunken-2: var(--surface-sunken-2);
-  --color-divider: var(--divider);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-hover: var(--primary-hover);
   --color-primary-soft: var(--primary-soft);
-  --color-primary-ring: var(--primary-ring);
   --color-accent: var(--accent);
   --color-success: var(--success);
-  --color-success-soft: var(--success-soft);
+  --color-success-vivid: var(--success-vivid);
   --color-warning: var(--warning);
+  --color-warning-vivid: var(--warning-vivid);
   --color-danger: var(--danger);
-  --color-danger-soft: var(--danger-soft);
+  --color-danger-vivid: var(--danger-vivid);
+
+  --color-on-dark: var(--on-dark);
+  --color-on-dark-secondary: var(--on-dark-secondary);
+  --color-on-dark-muted: var(--on-dark-muted);
+  --color-on-dark-subtle: var(--on-dark-subtle);
+  --color-on-dark-surface: var(--on-dark-surface);
+  --color-on-dark-surface-hover: var(--on-dark-surface-hover);
+  --color-on-dark-border: var(--on-dark-border);
+
+  /* Both map to DM Sans. `font-display` previously resolved to Geist and was
+     used exactly once (the marketing h1), making it the only text in the app
+     in a different typeface — that was accidental, not a design decision. */
   --font-sans: var(--font-dm-sans), var(--font-geist-sans);
-  --font-display: var(--font-geist-sans);
+  --font-display: var(--font-dm-sans), var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Radius scale. Each step has one job, so "which rounding?" is never a
+     judgement call: sm=badges/chips, md=buttons+inputs, lg=modals/drawers/
+     bubbles, xl=cards, 2xl=hero surfaces. */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
   --radius-xl: 14px;
+  --radius-2xl: 20px;
+
+  /* Shadow scale, tinted with the foreground navy rather than neutral black —
+     a grey shadow over a lilac-tinted background reads dirty. */
+  --shadow-xs: 0 1px 2px rgba(27, 27, 58, 0.05);
+  --shadow-sm: 0 1px 3px rgba(27, 27, 58, 0.07), 0 1px 2px rgba(27, 27, 58, 0.04);
+  --shadow-md: 0 4px 12px rgba(27, 27, 58, 0.08);
+  --shadow-lg: 0 12px 28px rgba(27, 27, 58, 0.12);
+  --shadow-xl: 0 24px 56px rgba(27, 27, 58, 0.18);
+  --shadow-glow: 0 0 40px rgba(108, 99, 255, 0.35);
+
+  /* Fills the holes in the type scale. It previously jumped 18px → 24px → 60px,
+     so any heading between those sizes had to be an arbitrary value. */
+  --text-xl: 1.25rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
 }
 
 * {
@@ -103,6 +152,28 @@ body {
 :focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
+}
+
+/* Shared entrance animations. Kept in CSS rather than a JS animation library
+   so they work on server-rendered markup with no hydration flash. The global
+   prefers-reduced-motion rule above flattens all of them. */
+@keyframes confirm-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Staggered list entrance. Set --stagger-index on each child. */
+.animate-rise-in {
+  animation: rise-in 260ms ease-out both;
+  animation-delay: calc(var(--stagger-index, 0) * 45ms);
 }
 
 /* Auth panel ripple + orbit animation (Sign in / Sign up left panel only). */

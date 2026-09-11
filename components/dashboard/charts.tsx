@@ -20,7 +20,7 @@ import {
   CHART_AXIS,
   CHART_PRIMARY,
   CHART_WARNING,
-} from "@/lib/chart-colors";
+} from "@/lib/tokens";
 
 export function RevenueExpenseChart({ data }: { data: MonthlyPoint[] }) {
   return (

@@ -31,7 +31,7 @@ export default async function LandingPage() {
               <Link href="/sign-up">
                 <button
                   type="button"
-                  className="h-10 rounded-lg px-4.5 text-sm font-medium text-white transition-colors hover:opacity-90"
+                  className="h-10 rounded-md px-4.5 text-sm font-medium text-white transition-colors hover:opacity-90"
                   style={{ background: "var(--gradient-sidebar)" }}
                 >
                   Start free
@@ -60,7 +60,7 @@ export default async function LandingPage() {
               <Link href="/sign-up">
                 <button
                   type="button"
-                  className="h-11 rounded-lg px-6 text-sm font-medium text-white transition-colors hover:opacity-90"
+                  className="h-11 rounded-md px-6 text-sm font-medium text-white transition-colors hover:opacity-90"
                   style={{ background: "var(--gradient-sidebar)" }}
                 >
                   Start free
@@ -75,7 +75,7 @@ export default async function LandingPage() {
           </div>
 
           <div
-            className="flex flex-col gap-5 rounded-[20px] p-7 shadow-[0_18px_40px_rgba(35,35,95,0.18)]"
+            className="flex flex-col gap-5 rounded-2xl p-7 shadow-[0_18px_40px_rgba(35,35,95,0.18)]"
             style={{ background: "var(--gradient-sidebar)" }}
           >
             <div className="flex items-center justify-between">

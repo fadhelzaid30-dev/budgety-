@@ -44,7 +44,7 @@ export default async function AppLayout({
           </span>
           <Link
             href="/dashboard"
-            className="flex h-10 items-center gap-3 rounded-lg px-3 text-sm text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+            className="flex h-10 items-center gap-3 rounded-md px-3 text-sm text-white/70 transition-colors hover:bg-white/10 hover:text-white"
           >
             <Settings className="h-4 w-4" aria-hidden="true" />
             Settings

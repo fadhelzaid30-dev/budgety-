@@ -112,7 +112,7 @@ function StatCard({
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex items-start justify-between gap-3">
           <span className="text-sm text-muted">{label}</span>
-          <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${toneClasses[tone]}`}>
+          <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${toneClasses[tone]}`}>
             <Icon className="h-4 w-4" aria-hidden="true" />
           </span>
         </div>

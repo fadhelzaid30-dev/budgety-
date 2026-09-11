@@ -27,7 +27,7 @@ function OrbitIcon({ icon: Icon }: { icon: React.ComponentType<{ className?: str
 export function FinanceOrbitDisplay() {
   return (
     <div className="relative flex h-full w-full items-center justify-center" aria-hidden="true">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 shadow-[0_0_40px_rgba(108,99,255,0.35)] backdrop-blur-sm">
+      <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-white/10 shadow-[0_0_40px_rgba(108,99,255,0.35)] backdrop-blur-sm">
         <LogoMark variant="light" size={30} />
       </div>
 

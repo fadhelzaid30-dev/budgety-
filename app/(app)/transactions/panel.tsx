@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import Papa from "papaparse";
 import { FileUp, Plus, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input, Label } from "@/components/ui/input";
+import { Input, Label, Select } from "@/components/ui/input";
 import { Tabs } from "@/components/ui/tabs";
 import { ToggleGroup } from "@/components/ui/toggle-group";
 import { useToast } from "@/components/ui/toast";
@@ -185,7 +185,7 @@ function ManualForm({ categories, onDone }: { categories: Category[]; onDone: ()
   return (
     <div className="space-y-5">
       {error ? (
-        <div role="alert" className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger">
+        <div role="alert" className="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">
           {error}
         </div>
       ) : null}
@@ -250,7 +250,7 @@ function ManualForm({ categories, onDone }: { categories: Category[]; onDone: ()
         />
       </div>
 
-      <div className="rounded-lg border border-border p-3">
+      <div className="rounded-md border border-border p-3">
         <label className="flex items-center gap-2 text-sm font-medium text-foreground">
           <input
             type="checkbox"
@@ -264,28 +264,26 @@ function ManualForm({ categories, onDone }: { categories: Category[]; onDone: ()
           <div className="mt-3 grid grid-cols-2 gap-3">
             <div>
               <Label htmlFor="p-freq">Frequency</Label>
-              <select
+              <Select
                 id="p-freq"
                 value={form.frequency}
                 onChange={(e) => setForm({ ...form, frequency: e.target.value as "monthly" | "biweekly" })}
-                className="h-10 w-full rounded-lg border border-border bg-card px-3 text-sm text-foreground"
               >
                 <option value="monthly">Monthly (Jan–Dec)</option>
                 <option value="biweekly">Biweekly</option>
-              </select>
+              </Select>
             </div>
             <div>
               <Label htmlFor="p-year">Year</Label>
-              <select
+              <Select
                 id="p-year"
                 value={form.year}
                 onChange={(e) => setForm({ ...form, year: Number(e.target.value) })}
-                className="h-10 w-full rounded-lg border border-border bg-card px-3 text-sm text-foreground"
               >
                 {yearOptions().map((y) => (
                   <option key={y} value={y}>{y}</option>
                 ))}
-              </select>
+              </Select>
             </div>
             <p className="col-span-2 text-xs text-muted">
               {form.frequency === "monthly"
@@ -383,7 +381,7 @@ function CsvTab({ onDone }: { onDone: () => void }) {
   return (
     <div className="space-y-5">
       {error ? (
-        <div role="alert" className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger">
+        <div role="alert" className="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">
           {error}
         </div>
       ) : null}
@@ -392,7 +390,7 @@ function CsvTab({ onDone }: { onDone: () => void }) {
         <>
           <div>
             <p className="mb-2 text-sm font-medium text-foreground">Expected format</p>
-            <div className="overflow-x-auto rounded-lg border border-border">
+            <div className="overflow-x-auto rounded-md border border-border">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-border bg-accent/40 text-left uppercase text-muted">
@@ -454,7 +452,7 @@ function CsvTab({ onDone }: { onDone: () => void }) {
               {preview?.valid.length ?? 0} valid · {preview?.errors.length ?? 0} skipped (of {rows.length})
             </span>
           </div>
-          <div className="overflow-x-auto rounded-lg border border-border">
+          <div className="overflow-x-auto rounded-md border border-border">
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-border bg-accent/40 text-left uppercase text-muted">
