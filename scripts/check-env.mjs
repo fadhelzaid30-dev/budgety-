@@ -24,10 +24,16 @@ const results = [];
 const isPlaceholder = (v) =>
   !v || /xxx|generate-a-long|yourdomain/i.test(v);
 
+// A check that can't run (key absent) is NOT a pass. Reporting it green is how
+// a placeholder OPENAI_API_KEY sat unnoticed while every AI call failed live.
+const SKIP = Symbol("skip");
+const skip = (msg) => [SKIP, msg];
+
 async function check(name, fn) {
   try {
     const msg = await fn();
-    results.push(["PASS", name, msg ?? ""]);
+    if (Array.isArray(msg) && msg[0] === SKIP) results.push(["SKIP", name, msg[1]]);
+    else results.push(["PASS", name, msg ?? ""]);
   } catch (e) {
     results.push(["FAIL", name, e.message]);
   }
@@ -83,10 +89,14 @@ await check("Supabase service_role key", async () => {
   throw new Error(`Supabase returned ${r.status}`);
 });
 
-// --- OpenAI key (optional) ---
-await check("OpenAI key (optional)", async () => {
+// --- OpenAI key: powers chat, recommendations, and reports ---
+await check("OpenAI key", async () => {
   const k = env.OPENAI_API_KEY;
-  if (isPlaceholder(k)) return "skipped — not set (AI features off)";
+  if (isPlaceholder(k)) return skip("NOT SET — AI CFO, recommendations + reports are DEAD");
+  // Shape check first, so an obvious placeholder fails loudly instead of
+  // spending a round-trip to be told 401.
+  if (!k.startsWith("sk-") || k.length < 40)
+    throw new Error(`not a real key (${k.length} chars; real keys are sk-… and 51+)`);
   const r = await fetch("https://api.openai.com/v1/models", {
     headers: { Authorization: `Bearer ${k}` },
   });
@@ -94,22 +104,33 @@ await check("OpenAI key (optional)", async () => {
   throw new Error(`OpenAI API returned ${r.status}`);
 });
 
-// --- Resend key (optional) ---
-await check("Resend key (optional)", async () => {
+// --- Resend key: weekly report email only ---
+await check("Resend key", async () => {
   const k = env.RESEND_API_KEY;
-  if (isPlaceholder(k)) return "skipped — not set (report email off)";
+  if (isPlaceholder(k)) return skip("NOT SET — weekly report emails will never send");
+  if (!k.startsWith("re_") || k.length < 20)
+    throw new Error(`not a real key (${k.length} chars; real keys are re_… and 30+)`);
   const r = await fetch("https://api.resend.com/domains", {
     headers: { Authorization: `Bearer ${k}` },
   });
-  if (r.status === 200 || r.status === 401 === false) return "authenticated with Resend API";
+  if (r.status === 200) return "authenticated with Resend API";
   throw new Error(`Resend API returned ${r.status}`);
 });
 
+const ICON = { PASS: "✅", SKIP: "⚠️ ", FAIL: "❌" };
+
 console.log("\n  Budgety — credential check\n  " + "-".repeat(46));
 for (const [status, name, msg] of results) {
-  const icon = status === "PASS" ? "✅" : "❌";
-  console.log(`  ${icon} ${name.padEnd(26)} ${msg}`);
+  console.log(`  ${ICON[status]} ${name.padEnd(26)} ${msg}`);
+}
+
+const failed = results.filter((r) => r[0] === "FAIL");
+const skipped = results.filter((r) => r[0] === "SKIP");
+if (skipped.length) {
+  console.log(
+    `\n  ⚠️  ${skipped.length} key(s) not set. These are NOT passing — the features\n` +
+      "     that depend on them are silently broken in the running app.",
+  );
 }
 console.log("");
-const failed = results.filter((r) => r[0] === "FAIL");
 process.exit(failed.length ? 1 : 0);

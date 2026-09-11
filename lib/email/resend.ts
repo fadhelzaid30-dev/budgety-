@@ -4,8 +4,14 @@ import type { Business, ReportContent } from "@/types";
 
 const FROM = process.env.RESEND_FROM_EMAIL ?? "Budgety <onboarding@resend.dev>";
 
+/**
+ * True only when RESEND_API_KEY looks like a real key — a placeholder passes a
+ * plain non-empty check and reports email as working while every send fails.
+ * Resend keys are `re_` followed by a ~30-character opaque string.
+ */
 export function isEmailConfigured(): boolean {
-  return Boolean(process.env.RESEND_API_KEY);
+  const key = process.env.RESEND_API_KEY?.trim();
+  return Boolean(key && key.startsWith("re_") && key.length >= 20);
 }
 
 function list(items: string[]): string {

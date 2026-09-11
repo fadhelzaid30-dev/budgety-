@@ -20,6 +20,14 @@ export function getOpenAI(): OpenAI {
 /** Default model. gpt-4o-mini keeps cost/latency low for MVP; override via env. */
 export const AI_MODEL = process.env.OPENAI_MODEL ?? "gpt-4o-mini";
 
+/**
+ * True only when OPENAI_API_KEY looks like a real key. A non-empty check isn't
+ * enough: a placeholder value passes it, so every guard succeeds and the app
+ * reports itself configured right up until the request fails at the network
+ * call. Real keys are `sk-` (optionally `sk-proj-`/`sk-svcacct-`) followed by a
+ * long opaque string — the shortest form is 51 characters.
+ */
 export function isAiConfigured(): boolean {
-  return Boolean(process.env.OPENAI_API_KEY);
+  const key = process.env.OPENAI_API_KEY?.trim();
+  return Boolean(key && key.startsWith("sk-") && key.length >= 40);
 }
