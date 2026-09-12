@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import { getCurrentBusiness, getCategories, getTransactions } from "@/lib/data/queries";
 import { AddTransactionPanel } from "./panel";
 import { TransactionFilters, TransactionList, TransactionStats } from "./ui";
+
+export const metadata: Metadata = { title: "Transactions — Budgety" };
 
 export default async function TransactionsPage({
   searchParams,
@@ -39,13 +42,17 @@ export default async function TransactionsPage({
     limit: 1000,
   });
 
+  const hasFilters = Boolean(sp.q || sp.category || sp.type || sp.frequency || sp.year || sp.month);
+
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Transactions</h1>
           <p className="text-sm text-muted">
-            Add income and expenses, or import a bank CSV.
+            {hasFilters
+              ? `${transactions.length} matching transaction${transactions.length === 1 ? "" : "s"}`
+              : "Add income and expenses, or import a bank CSV."}
           </p>
         </div>
         <AddTransactionPanel categories={categories} />
@@ -53,8 +60,12 @@ export default async function TransactionsPage({
 
       <TransactionStats transactions={transactions} />
 
-      <TransactionFilters categories={categories} current={sp} />
-      <TransactionList transactions={transactions} categories={categories} />
+      <TransactionFilters categories={categories} current={sp} hasFilters={hasFilters} />
+      <TransactionList
+        transactions={transactions}
+        categories={categories}
+        hasFilters={hasFilters}
+      />
     </div>
   );
 }
