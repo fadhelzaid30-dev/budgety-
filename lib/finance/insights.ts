@@ -45,15 +45,31 @@ export function buildInsights(a: FinancialAggregates, limit = 3): Insight[] {
     });
   }
 
-  // --- Losing money this month --------------------------------------------
-  if (a.profitLoss.month < 0 && a.expenses.month > 0) {
+  // --- Month-to-date shortfall, or a gap in the data ----------------------
+  // Zero revenue booked this month while expenses are landing usually means
+  // income hasn't been entered yet, not that the business earned nothing. Prior
+  // months earning revenue is the tell. Calling that a loss would be alarming
+  // and wrong, so it's reported as what it is: a gap.
+  const earnedBefore = a.monthlySeries.slice(0, -1).some((m) => m.revenue > 0);
+  if (a.revenue.month === 0 && a.expenses.month > 0 && earnedBefore) {
+    out.push({
+      id: "revenue-gap",
+      tone: "default",
+      title: "No income recorded yet this month",
+      detail: `${money(
+        a.expenses.month,
+      )} of spending is logged but no revenue, so this month's profit and health score are understated.`,
+      href: "/transactions",
+      linkLabel: "Add income",
+    });
+  } else if (a.profitLoss.month < 0 && a.expenses.month > 0) {
     out.push({
       id: "monthly-loss",
       tone: "warning",
       title: `Spending exceeds income this month by ${money(a.profitLoss.month)}`,
       detail: `${money(a.expenses.month)} out against ${money(
         a.revenue.month,
-      )} in so far this month.`,
+      )} in, month to date.`,
       href: "/transactions",
       linkLabel: "See transactions",
     });
@@ -106,8 +122,18 @@ export function buildInsights(a: FinancialAggregates, limit = 3): Insight[] {
     });
   }
 
+  // A category falling to exactly zero is almost never a saving — it's a month
+  // that hasn't been filled in yet, or a recurring series that ended. Reporting
+  // "Payroll fell $28,500" as good news when payroll simply wasn't recorded
+  // would be actively misleading in a financial product, so `current > 0` is
+  // required. The zero case is surfaced as a data-gap warning instead.
   const drop = a.categoryTrends.find(
-    (c) => c.deltaPct != null && c.deltaPct <= -25 && c.delta <= -100 && c.name !== UNCATEGORIZED,
+    (c) =>
+      c.deltaPct != null &&
+      c.deltaPct <= -25 &&
+      c.delta <= -100 &&
+      c.current > 0 &&
+      c.name !== UNCATEGORIZED,
   );
   if (drop) {
     out.push({
@@ -115,6 +141,21 @@ export function buildInsights(a: FinancialAggregates, limit = 3): Insight[] {
       tone: "success",
       title: `${drop.name} spending fell ${money(drop.delta)} last month`,
       detail: `Down from ${money(drop.previous)} to ${money(drop.current)}.`,
+    });
+  }
+
+  const vanished = a.categoryTrends.filter((c) => c.previous >= 100 && c.current === 0);
+  if (vanished.length > 0) {
+    const names = vanished.slice(0, 3).map((c) => c.name);
+    out.push({
+      id: "category-vanished",
+      tone: "default",
+      title: `No ${names.join(", ")} spending recorded last month`,
+      detail: `${
+        names.length === 1 ? "That category" : "Those categories"
+      } had ${money(vanished[0].previous)} the month before. If the spending happened, it's missing — which would skew your health score.`,
+      href: "/transactions",
+      linkLabel: "Check transactions",
     });
   }
 

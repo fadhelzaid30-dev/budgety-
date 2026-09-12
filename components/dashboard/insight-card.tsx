@@ -30,13 +30,16 @@ export function InsightCard({ insights }: { insights: Insight[] }) {
   return (
     <Card>
       <CardContent className="space-y-1">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-medium text-muted">What stands out</h2>
+        {/* gap-3 + shrink-0 + whitespace-nowrap: in the narrow dashboard column
+            both the heading and the link were wrapping onto two lines each and
+            colliding. */}
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2 className="whitespace-nowrap text-sm font-medium text-muted">What stands out</h2>
           <Link
             href="/assistant"
-            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+            className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-xs font-medium text-primary hover:underline"
           >
-            Ask the AI CFO <ArrowRight className="h-3 w-3" aria-hidden="true" />
+            Ask AI <ArrowRight className="h-3 w-3" aria-hidden="true" />
           </Link>
         </div>
 

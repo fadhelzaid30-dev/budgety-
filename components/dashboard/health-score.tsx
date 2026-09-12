@@ -38,6 +38,13 @@ export function HealthScoreCard({ health }: { health: HealthScoreResult }) {
   const circumference = 2 * Math.PI * radius;
   const offset = circumference * (1 - score / 100);
 
+  // Each factor is coloured by its OWN value, not the overall score. Deriving
+  // every bar from the overall tone painted a factor sitting at 100 in the same
+  // alarming red as one sitting at 0, which reads as "maxed out bad" — the
+  // opposite of what a full expense-trend bar means.
+  const factorColor = (v: number) =>
+    v >= 70 ? CHART_SUCCESS : v >= 45 ? CHART_WARNING : CHART_DANGER;
+
   // Worst factors first so attention lands where it matters. debtRatio is a
   // fixed placeholder, so it's never presented as an actionable weak point.
   const ordered = (Object.keys(FACTOR_LABELS) as (keyof typeof factors)[]).sort((a, b) => {
@@ -111,7 +118,7 @@ export function HealthScoreCard({ health }: { health: HealthScoreResult }) {
                       style={
                         {
                           width: `${factors[key]}%`,
-                          background: color,
+                          background: key === "debtRatio" ? CHART_MUTED : factorColor(factors[key]),
                           "--stagger-index": i,
                         } as React.CSSProperties
                       }

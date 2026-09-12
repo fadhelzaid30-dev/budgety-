@@ -66,6 +66,12 @@ export default async function DashboardPage() {
   const recent = await getTransactions(business.id, { limit: 6 });
   const series = a.monthlySeries;
 
+  // Expenses landing with no revenue, in a business that has earned before,
+  // means income for this month hasn't been entered yet. Worth saying plainly
+  // rather than presenting an alarming "in the red" figure as settled fact.
+  const incompleteMonth =
+    a.revenue.month === 0 && a.expenses.month > 0 && series.slice(0, -1).some((m) => m.revenue > 0);
+
   // Top 5 categories plus an "Other" bucket — a donut stops being readable past
   // about five slices, and this previously drew up to eight.
   const top = a.expensesByCategory.slice(0, 5);
@@ -110,18 +116,27 @@ export default async function DashboardPage() {
           spark={series.map((m) => m.net)}
           sparkColor={CHART_PRIMARY}
         />
+        {/* "Month to date", not "this month" — on the 12th these figures cover
+            12 days, and the previous wording invited comparison with whole
+            months. The growth percentage measures the last two COMPLETE months
+            (see computeAggregates), so it's labelled as such rather than being
+            stacked under a partial-month total as "vs last month". */}
         <Stat
           icon={TrendingUp}
-          label="Revenue (this month)"
+          label="Revenue (month to date)"
           value={formatCurrency(a.revenue.month)}
-          sub={`${formatPercent(a.revenueGrowthMoM)} vs last month`}
+          sub={
+            a.revenueGrowthMoM == null
+              ? "Not enough history to compare"
+              : `${formatPercent(a.revenueGrowthMoM)} across the last two full months`
+          }
           subtone={a.revenueGrowthMoM != null && a.revenueGrowthMoM >= 0 ? "success" : "danger"}
           spark={series.map((m) => m.revenue)}
           sparkColor={CHART_SUCCESS}
         />
         <Stat
           icon={TrendingDown}
-          label="Expenses (this month)"
+          label="Expenses (month to date)"
           value={formatCurrency(a.expenses.month)}
           sub={`${formatCurrency(a.monthlyBurn)}/mo average burn`}
           spark={series.map((m) => m.expense)}
@@ -129,10 +144,16 @@ export default async function DashboardPage() {
         />
         <Stat
           icon={Scale}
-          label="Profit / loss (this month)"
+          label="Profit / loss (month to date)"
           value={formatCurrency(a.profitLoss.month)}
-          sub={a.profitLoss.month >= 0 ? "In the black" : "In the red"}
-          subtone={a.profitLoss.month >= 0 ? "success" : "danger"}
+          sub={
+            incompleteMonth
+              ? "No income logged yet this month"
+              : a.profitLoss.month >= 0
+                ? "In the black"
+                : "In the red"
+          }
+          subtone={incompleteMonth ? undefined : a.profitLoss.month >= 0 ? "success" : "danger"}
           spark={series.map((m) => m.net)}
           sparkColor={a.profitLoss.month >= 0 ? CHART_SUCCESS : CHART_DANGER}
         />
