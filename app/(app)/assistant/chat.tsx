@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Send } from "lucide-react";
+import { RotateCw, Send } from "lucide-react";
+import { LogoMark } from "@/components/wordmark";
+import { Markdown } from "@/components/ui/markdown";
+import { Alert } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import type { AiConversationMessage } from "@/types";
 
@@ -11,18 +14,27 @@ interface Msg {
 }
 
 const SUGGESTIONS = [
+  "How healthy is my business?",
+  "Where am I overspending?",
   "Can I afford a $5,000 truck?",
-  "Should I increase marketing spending?",
-  "How much cash should I keep in reserve?",
-  "What's causing my profit to change?",
+  "Break down my expenses by category",
 ];
 
-export function Chat({ initialMessages }: { initialMessages: AiConversationMessage[] }) {
+export function Chat({
+  initialMessages,
+  contextLabel,
+}: {
+  initialMessages: AiConversationMessage[];
+  /** e.g. "41 transactions from Jan–Sep 2026" — what the AI can actually see. */
+  contextLabel: string;
+}) {
   const [messages, setMessages] = useState<Msg[]>(
     initialMessages.map((m) => ({ role: m.role, content: m.content })),
   );
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [lastQuestion, setLastQuestion] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,6 +46,8 @@ export function Chat({ initialMessages }: { initialMessages: AiConversationMessa
     if (!question || streaming) return;
 
     const history = messages.slice(-10);
+    setLastQuestion(question);
+    setError(null);
     setMessages((m) => [...m, { role: "user", content: question }, { role: "assistant", content: "" }]);
     setInput("");
     setStreaming(true);
@@ -47,11 +61,12 @@ export function Chat({ initialMessages }: { initialMessages: AiConversationMessa
 
       if (!res.ok || !res.body) {
         const err = await res.json().catch(() => ({ error: "Something went wrong." }));
-        setMessages((m) => {
-          const next = [...m];
-          next[next.length - 1] = { role: "assistant", content: err.error ?? "Something went wrong." };
-          return next;
-        });
+        // Drop the empty assistant bubble and surface the failure as a real
+        // error with a retry, rather than as a message the AI appears to have
+        // said. An error rendered as assistant text is indistinguishable from
+        // advice, which in a finance app is not an acceptable ambiguity.
+        setMessages((m) => m.slice(0, -1));
+        setError(err.error ?? "Something went wrong.");
         return;
       }
 
@@ -69,28 +84,38 @@ export function Chat({ initialMessages }: { initialMessages: AiConversationMessa
         });
       }
     } catch {
-      setMessages((m) => {
-        const next = [...m];
-        next[next.length - 1] = { role: "assistant", content: "Network error. Please try again." };
-        return next;
-      });
+      setMessages((m) => m.slice(0, -1));
+      setError("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setStreaming(false);
     }
   }
 
+  const showSuggestions = messages.length === 0;
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card">
-      <div ref={scrollRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4" aria-live="polite">
-        {messages.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
-            <p className="text-sm text-muted">Ask your AI CFO anything about your finances.</p>
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
+      <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
+        <span className="h-1.5 w-1.5 rounded-full bg-success" aria-hidden="true" />
+        <p className="text-xs text-muted">Answering from {contextLabel}</p>
+      </div>
+
+      <div ref={scrollRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
+        {showSuggestions ? (
+          <div className="flex h-full flex-col items-center justify-center gap-5 text-center">
+            <LogoMark size={40} />
+            <div>
+              <p className="text-base font-semibold text-foreground">Ask your AI CFO</p>
+              <p className="mt-1 max-w-sm text-sm text-muted">
+                Every answer is grounded in your own numbers — it won&apos;t invent figures.
+              </p>
+            </div>
             <div className="flex flex-wrap justify-center gap-2">
               {SUGGESTIONS.map((s) => (
                 <button
                   key={s}
                   onClick={() => send(s)}
-                  className="rounded-full border border-border px-3 py-1.5 text-sm text-foreground hover:bg-accent"
+                  className="rounded-full border border-border px-3.5 py-1.5 text-sm text-foreground transition-colors hover:border-primary/40 hover:bg-primary/5"
                 >
                   {s}
                 </button>
@@ -98,23 +123,57 @@ export function Chat({ initialMessages }: { initialMessages: AiConversationMessa
             </div>
           </div>
         ) : (
-          messages.map((m, i) => (
-            <div
-              key={i}
-              className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}
-            >
-              <div
-                className={cn(
-                  "max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-2 text-sm",
-                  m.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-accent text-foreground",
-                )}
-              >
-                {m.content || (streaming && i === messages.length - 1 ? "…" : "")}
-              </div>
-            </div>
-          ))
+          <div aria-live="polite" className="space-y-4">
+            {messages.map((m, i) => {
+              const isLast = i === messages.length - 1;
+              const thinking = streaming && isLast && m.role === "assistant" && m.content === "";
+              return (
+                <div
+                  key={i}
+                  className={cn("flex gap-2.5", m.role === "user" ? "justify-end" : "justify-start")}
+                >
+                  {m.role === "assistant" ? (
+                    <span className="mt-0.5 shrink-0" aria-hidden="true">
+                      <LogoMark size={26} />
+                    </span>
+                  ) : null}
+                  <div
+                    className={cn(
+                      "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm",
+                      m.role === "user"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-accent text-foreground",
+                    )}
+                  >
+                    {thinking ? (
+                      <span className="flex items-center gap-2 text-muted">
+                        <Dots />
+                        Reading your numbers…
+                      </span>
+                    ) : m.role === "assistant" ? (
+                      <Markdown>{m.content}</Markdown>
+                    ) : (
+                      <span className="whitespace-pre-wrap">{m.content}</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+
+            {error ? (
+              <Alert tone="danger" title="That didn't go through">
+                <p>{error}</p>
+                {lastQuestion ? (
+                  <button
+                    onClick={() => send(lastQuestion)}
+                    className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                  >
+                    <RotateCw className="h-3 w-3" aria-hidden="true" /> Try again
+                  </button>
+                ) : null}
+              </Alert>
+            ) : null}
+          </div>
         )}
       </div>
 
@@ -125,7 +184,7 @@ export function Chat({ initialMessages }: { initialMessages: AiConversationMessa
           send(input);
         }}
       >
-        <div className="flex h-11 items-center gap-2 rounded-full border border-border bg-card pl-4 pr-1.5 focus-within:ring-2 focus-within:ring-primary">
+        <div className="flex h-11 items-center gap-2 rounded-full border border-border bg-card pl-4 pr-1.5 transition-colors focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/15">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -145,5 +204,20 @@ export function Chat({ initialMessages }: { initialMessages: AiConversationMessa
         </div>
       </form>
     </div>
+  );
+}
+
+/** Three-dot typing indicator. Replaces a single static "…" character. */
+function Dots() {
+  return (
+    <span className="flex gap-1" aria-hidden="true">
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          className="h-1.5 w-1.5 animate-[dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-muted"
+          style={{ animationDelay: `${i * 0.16}s` }}
+        />
+      ))}
+    </span>
   );
 }

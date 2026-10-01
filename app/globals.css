@@ -186,6 +186,12 @@ body {
   animation-delay: calc(var(--stagger-index, 0) * 55ms);
 }
 
+/* Chat typing indicator. */
+@keyframes dot-pulse {
+  0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-2px); }
+}
+
 /* Staggered list entrance. Set --stagger-index on each child. */
 .animate-rise-in {
   animation: rise-in 260ms ease-out both;
