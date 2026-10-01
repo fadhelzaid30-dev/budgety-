@@ -25,7 +25,7 @@ import { ToggleGroup } from "@/components/ui/toggle-group";
 import { Alert } from "@/components/ui/alert";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate, todayIso } from "@/lib/utils";
 import {
   deleteRecurrenceGroup,
   deleteTransaction,
@@ -34,17 +34,8 @@ import {
 } from "@/lib/actions/transactions";
 import type { Category, Transaction } from "@/types";
 
-/**
- * Today as local yyyy-mm-dd. `toISOString()` is UTC, so west of UTC after
- * ~16:00 local it returned tomorrow's date and pre-filled the wrong day on the
- * add-transaction form. Same class of bug as the one fixed in aggregates.ts.
- */
-export const today = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-    d.getDate(),
-  ).padStart(2, "0")}`;
-};
+/** Re-exported for the add-transaction panel, which imports from here. */
+export const today = todayIso;
 export const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",

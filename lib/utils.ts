@@ -28,6 +28,20 @@ export function formatDate(iso: string) {
   });
 }
 
+/**
+ * Today as a local yyyy-mm-dd, for date inputs.
+ *
+ * Deliberately not `toISOString().slice(0,10)`, which is UTC: west of UTC after
+ * ~16:00 local that returns tomorrow, so date fields pre-filled the wrong day.
+ * The same bug existed independently in three places before this was shared.
+ */
+export function todayIso() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
+}
+
 /** Signed percentage, e.g. +12.4% / -3.1%. Returns "—" for undefined. */
 export function formatPercent(value: number | null | undefined) {
   if (value == null || !Number.isFinite(value)) return "—";

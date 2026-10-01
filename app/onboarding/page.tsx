@@ -1,10 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ensureProfile, getCurrentBusiness } from "@/lib/data/queries";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { isAiConfigured } from "@/lib/ai/openai";
 import { WordMark } from "@/components/wordmark";
 import { OnboardingWizard } from "./wizard";
 import type { Category } from "@/types";
+
+export const metadata: Metadata = { title: "Set up Budgety" };
 
 export default async function OnboardingPage() {
   await ensureProfile();
@@ -30,6 +34,7 @@ export default async function OnboardingPage() {
       <OnboardingWizard
         existingBusiness={business}
         categories={(categories as Category[]) ?? []}
+        aiConfigured={isAiConfigured()}
       />
     </div>
   );
