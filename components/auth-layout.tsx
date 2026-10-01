@@ -26,13 +26,13 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
             <span className="text-2xl font-bold leading-snug text-white">
               Two minutes of setup, then Budgety works from your real numbers.
             </span>
-            <span className="text-sm leading-relaxed text-white/70">
+            <span className="text-sm leading-relaxed text-on-dark-secondary">
               Import a CSV or add transactions by hand. Your health score,
               recommendations, and weekly report follow from there.
             </span>
           </div>
 
-          <span className="text-xs text-white/50">
+          <span className="text-xs text-on-dark-muted">
             Your data is private and isolated per account.
           </span>
         </div>

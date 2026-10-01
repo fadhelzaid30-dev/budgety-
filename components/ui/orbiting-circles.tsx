@@ -23,7 +23,7 @@ export function OrbitingCircles({
       {showPath ? (
         <svg className="pointer-events-none absolute inset-0 size-full" aria-hidden="true">
           <circle
-            className="stroke-white/10"
+            className="stroke-on-dark-border"
             cx="50%"
             cy="50%"
             r={radius}
