@@ -1,7 +1,11 @@
+import type { Metadata } from "next";
 import { getCurrentBusiness } from "@/lib/data/queries";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { isAiConfigured } from "@/lib/ai/openai";
 import { RecommendationsView } from "./ui";
 import type { AiRecommendation } from "@/types";
+
+export const metadata: Metadata = { title: "Recommendations — Budgety" };
 
 export default async function RecommendationsPage() {
   const business = (await getCurrentBusiness())!;
@@ -22,7 +26,10 @@ export default async function RecommendationsPage() {
           Weekly, actionable advice grounded in your real numbers.
         </p>
       </div>
-      <RecommendationsView recommendations={(data as AiRecommendation[]) ?? []} />
+      <RecommendationsView
+        recommendations={(data as AiRecommendation[]) ?? []}
+        aiConfigured={isAiConfigured()}
+      />
     </div>
   );
 }

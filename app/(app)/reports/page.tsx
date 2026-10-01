@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import { getCurrentBusiness } from "@/lib/data/queries";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { isAiConfigured } from "@/lib/ai/openai";
+import { isEmailConfigured } from "@/lib/email/resend";
 import { ReportsView } from "./ui";
 import type { Report } from "@/types";
+
+export const metadata: Metadata = { title: "Reports — Budgety" };
 
 export default async function ReportsPage() {
   const business = (await getCurrentBusiness())!;
@@ -18,10 +23,14 @@ export default async function ReportsPage() {
       <div>
         <h1 className="text-2xl font-bold text-foreground">Weekly reports</h1>
         <p className="text-sm text-muted">
-          Auto-generated every Monday and emailed to you. Generate one anytime below.
+          A written summary of each week&apos;s cash flow, risks, and suggested actions.
         </p>
       </div>
-      <ReportsView reports={(data as Report[]) ?? []} />
+      <ReportsView
+        reports={(data as Report[]) ?? []}
+        aiConfigured={isAiConfigured()}
+        emailConfigured={isEmailConfigured()}
+      />
     </div>
   );
 }

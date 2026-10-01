@@ -2,17 +2,28 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { ChevronDown, FileText, Mail } from "lucide-react";
+import Link from "next/link";
+import { ChevronDown, FileText, KeyRound, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge, EmptyState } from "@/components/ui/misc";
 import { Alert } from "@/components/ui/alert";
+import { useToast } from "@/components/ui/toast";
 import { generateReportNow } from "@/lib/actions/reports";
 import { formatDate } from "@/lib/utils";
 import type { Report } from "@/types";
 
-export function ReportsView({ reports }: { reports: Report[] }) {
+export function ReportsView({
+  reports,
+  aiConfigured,
+  emailConfigured,
+}: {
+  reports: Report[];
+  aiConfigured: boolean;
+  emailConfigured: boolean;
+}) {
   const router = useRouter();
+  const toast = useToast();
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -20,48 +31,78 @@ export function ReportsView({ reports }: { reports: Report[] }) {
     setError(null);
     start(async () => {
       const res = await generateReportNow();
-      if (!res.ok) return setError(res.error);
+      if (!res.ok) {
+        setError(res.error);
+        return;
+      }
+      toast.show("Report generated.");
       router.refresh();
     });
   }
 
+  if (!aiConfigured) {
+    return (
+      <EmptyState
+        icon={KeyRound}
+        title="Reports need the AI switched on"
+        description="Reports are written from your numbers by the AI, which requires an OpenAI API key in .env.local. Until then your dashboard carries the same underlying figures."
+        action={
+          <Link href="/dashboard">
+            <Button variant="outline">Go to dashboard</Button>
+          </Link>
+        }
+      />
+    );
+  }
+
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button onClick={generate} disabled={pending}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-muted">
+          {/* Previously the empty state promised a report "Monday" with no
+              caveat. The cron only mails anything if Resend is configured. */}
+          Generated automatically every Monday
+          {emailConfigured ? " and emailed to you." : " — email delivery is off until a Resend key is set."}
+        </p>
+        <Button onClick={generate} loading={pending}>
           <FileText className="h-4 w-4" />
-          {pending ? "Generating…" : "Generate report now"}
+          Generate report now
         </Button>
       </div>
 
-      {error ? (
-        <Alert tone="danger">
-          {error}
-        </Alert>
-      ) : null}
+      {error ? <Alert tone="danger">{error}</Alert> : null}
 
       {reports.length === 0 ? (
         <EmptyState
           icon={FileText}
           title="No reports yet"
-          description="Your first report will appear here — generate one now or wait for Monday."
+          description="Each report summarises the week's cash flow, flags risks, and suggests actions. Generate one now or wait for Monday."
+          action={
+            <Button onClick={generate} loading={pending}>
+              <FileText className="h-4 w-4" /> Generate the first one
+            </Button>
+          }
         />
       ) : (
-        reports.map((r) => <ReportCard key={r.id} report={r} />)
+        <div className="space-y-3">
+          {reports.map((r, i) => (
+            <ReportCard key={r.id} report={r} index={i} />
+          ))}
+        </div>
       )}
     </div>
   );
 }
 
-function ReportCard({ report }: { report: Report }) {
+function ReportCard({ report, index }: { report: Report; index: number }) {
   const [open, setOpen] = useState(false);
   const c = report.content;
   const emailTone =
     report.email_status === "sent" ? "success" : report.email_status === "failed" ? "danger" : "default";
 
   return (
-    <Card>
-      <CardContent className="flex gap-4 pt-5">
+    <Card className="animate-rise-in" style={{ "--stagger-index": index } as React.CSSProperties}>
+      <CardContent className="flex gap-4">
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-background-alt text-muted">
           <FileText className="h-4 w-4" aria-hidden="true" />
         </span>
