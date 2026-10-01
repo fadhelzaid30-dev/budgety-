@@ -80,6 +80,15 @@
   --color-primary-hover: var(--primary-hover);
   --color-primary-soft: var(--primary-soft);
   --color-accent: var(--accent);
+
+  /* Brand gradient stops, exposed as utilities so the warm accent can be used
+     for hover tints without hand-inlining a linear-gradient. Per the brand
+     rules these stay accents — never a primary surface. */
+  --color-accent-warm-from: var(--accent-warm-from);
+  --color-accent-warm-to: var(--accent-warm-to);
+  --color-secondary-from: var(--secondary-from);
+  --color-secondary-to: var(--secondary-to);
+
   --color-success: var(--success);
   --color-success-vivid: var(--success-vivid);
   --color-warning: var(--warning);

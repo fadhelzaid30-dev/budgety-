@@ -295,8 +295,8 @@ function ManualForm({ categories, onDone }: { categories: Category[]; onDone: ()
         ) : null}
       </div>
 
-      <Button onClick={submit} disabled={pending || !form.amount} className="w-full">
-        {pending ? "Saving…" : repeats ? "Create series" : "Add transaction"}
+      <Button onClick={submit} loading={pending} disabled={!form.amount} className="w-full">
+        {repeats ? "Create series" : "Add transaction"}
       </Button>
     </div>
   );
@@ -493,8 +493,12 @@ function CsvTab({ onDone }: { onDone: () => void }) {
             >
               Choose another file
             </Button>
-            <Button onClick={confirmImport} disabled={busy || (preview?.valid.length ?? 0) === 0}>
-              {busy ? "Importing…" : `Import ${rows.length} rows`}
+            <Button
+              onClick={confirmImport}
+              loading={busy}
+              disabled={(preview?.valid.length ?? 0) === 0}
+            >
+              Import {rows.length} row{rows.length === 1 ? "" : "s"}
             </Button>
           </div>
         </>

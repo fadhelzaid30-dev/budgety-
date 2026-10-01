@@ -29,20 +29,16 @@ export default async function LandingPage() {
                 </Button>
               </Link>
               <Link href="/sign-up">
-                <button
-                  type="button"
-                  className="h-10 rounded-md px-4.5 text-sm font-medium text-white transition-colors hover:opacity-90"
-                  style={{ background: "var(--gradient-sidebar)" }}
-                >
+                <Button variant="gradient" size="sm">
                   Start free
-                </button>
+                </Button>
               </Link>
             </>
           )}
         </nav>
       </header>
 
-      <main className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col gap-18 px-6 pb-24 pt-8 md:px-12">
+      <main className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col gap-16 px-6 pb-24 pt-8 md:px-12">
         <section className="grid items-center gap-12 md:grid-cols-2">
           <div className="flex flex-col gap-6">
             <span className="inline-flex w-fit items-center rounded-full bg-primary-soft px-3 py-1 text-xs font-semibold text-primary">
@@ -58,13 +54,9 @@ export default async function LandingPage() {
             </p>
             <div className="flex gap-3">
               <Link href="/sign-up">
-                <button
-                  type="button"
-                  className="h-11 rounded-md px-6 text-sm font-medium text-white transition-colors hover:opacity-90"
-                  style={{ background: "var(--gradient-sidebar)" }}
-                >
+                <Button variant="gradient" size="lg">
                   Start free
-                </button>
+                </Button>
               </Link>
               <Link href="/sign-in">
                 <Button variant="outline" size="lg">
@@ -75,33 +67,33 @@ export default async function LandingPage() {
           </div>
 
           <div
-            className="flex flex-col gap-5 rounded-2xl p-7 shadow-[0_18px_40px_rgba(35,35,95,0.18)]"
+            className="flex flex-col gap-5 rounded-2xl p-7 shadow-xl"
             style={{ background: "var(--gradient-sidebar)" }}
           >
             <div className="flex items-center justify-between">
-              <span className="text-sm text-white/70">Business health</span>
-              <span className="inline-flex h-6 items-center rounded-full bg-[rgba(45,157,120,0.20)] px-2.5 text-xs font-semibold text-[#6EE7B7]">
+              <span className="text-sm text-on-dark-secondary">Business health</span>
+              <span className="inline-flex h-6 items-center rounded-full bg-success-vivid/20 px-2.5 text-xs font-semibold text-success-vivid">
                 +6.3%
               </span>
             </div>
             <div className="flex items-baseline gap-2.5">
-              <span className="text-6xl font-bold tracking-tight text-white">72</span>
-              <span className="text-sm text-white/60">out of 100</span>
+              <span className="text-6xl font-bold tracking-tight text-on-dark">72</span>
+              <span className="text-sm text-on-dark-muted">out of 100</span>
             </div>
-            <div className="h-1.5 overflow-hidden rounded-full bg-white/15">
-              <div className="h-full w-[72%] rounded-full bg-[#6EE7B7]" />
+            <div className="h-1.5 overflow-hidden rounded-full bg-on-dark-surface-hover">
+              <div className="h-full w-[72%] rounded-full bg-success-vivid" />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-xl bg-white/[0.06] p-4">
-                <div className="text-xs text-white/60">Cash on hand</div>
-                <div className="text-2xl font-bold text-white">$15,700</div>
+              <div className="rounded-xl bg-on-dark-surface p-4">
+                <div className="text-xs text-on-dark-muted">Cash on hand</div>
+                <div className="text-2xl font-bold text-on-dark">$15,700</div>
               </div>
-              <div className="rounded-xl bg-white/[0.06] p-4">
-                <div className="text-xs text-white/60">Runway</div>
-                <div className="text-2xl font-bold text-white">4.2 mo</div>
+              <div className="rounded-xl bg-on-dark-surface p-4">
+                <div className="text-xs text-on-dark-muted">Runway</div>
+                <div className="text-2xl font-bold text-on-dark">4.2 mo</div>
               </div>
             </div>
-            <p className="text-sm leading-relaxed text-white/70">
+            <p className="text-sm leading-relaxed text-on-dark-secondary">
               &ldquo;You can afford the $5,000 truck this quarter — it drops runway from
               4.2 to 3.6 months.&rdquo;
             </p>
@@ -147,8 +139,8 @@ function Feature({
   body: string;
 }) {
   return (
-    <Card className="group flex flex-col gap-3 p-6 shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
-      <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-soft text-primary transition-colors group-hover:bg-[linear-gradient(135deg,rgba(240,153,123,0.32)_0%,rgba(216,90,48,0.26)_100%)] group-hover:text-[#D85A30]">
+    <Card className="group flex flex-col gap-3 p-6 transition-shadow hover:shadow-md">
+      <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-accent-warm-from/15 group-hover:text-accent-warm-from">
         <Icon className="h-6 w-6" />
       </span>
       <h3 className="text-lg font-semibold text-foreground-secondary">{title}</h3>
